@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Form Opname Store — IMPLORA v22</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+:root{--rose:#c8506a;--rose-light:#f5e8ec;--rose-dark:#a03650;--ink:#1a1118;--ink-soft:#4a3f47;--mist:#f7f3f5;--border:#e8dde2;--gold:#d4a843;--green:#3d7a5e;--white:#ffffff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--mist);color:var(--ink);min-height:100vh}
+.header{background:var(--ink);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3)}
+.header-back-btn{width:38px;height:38px;border-radius:10px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.header-back-btn:hover{background:rgba(255,255,255,.18)}
+.header-logo-wrap{flex:1;display:flex;justify-content:center;align-items:center}
+.container{max-width:960px;margin:0 auto;padding:20px 14px 100px}
+.card{background:var(--white);border-radius:14px;box-shadow:0 2px 12px rgba(26,17,24,.08);margin-bottom:14px;overflow:hidden}
+.card-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.card-icon{width:34px;height:34px;border-radius:9px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.card-title{font-size:14px;font-weight:600}
+.card-desc{font-size:12px;color:var(--ink-soft);margin-top:2px}
+.card-body{padding:18px 20px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.info-grid{grid-template-columns:1fr}}
+.field-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--ink-soft);margin-bottom:5px;display:block}
+.field-input,.field-select{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s}
+input[type="date"].field-input{font-size:15px;padding:9px 10px;min-height:0;height:44px;-webkit-appearance:none;appearance:none}
+input[type="date"]::-webkit-date-and-time-value{text-align:left;font-size:15px}
+.field-input:focus,.field-select:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(200,80,106,.1)}
+.field-select{cursor:pointer}
+.store-picker{position:relative}
+.store-display{width:100%;padding:10px 36px 10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--white);outline:none;cursor:pointer;transition:border-color .2s,box-shadow .2s;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:44px}
+.store-display:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(200,80,106,.1)}
+.store-arrow{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--ink-soft);pointer-events:none}
+.store-dropdown{display:none;position:fixed;width:320px;background:white;border:1.5px solid var(--rose);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.18);z-index:9999;overflow:hidden}
+.store-dropdown.open{display:block}
+.store-search-wrap{padding:8px 9px;border-bottom:1px solid var(--border);background:var(--mist)}
+.store-search{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:16px;outline:none;background:white;color:var(--ink)}
+.store-search:focus{border-color:var(--rose)}
+.store-list{max-height:220px;overflow-y:auto;overflow-x:hidden}
+.store-opt{padding:10px 13px;display:flex;align-items:center;gap:9px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;min-width:0}
+.store-opt:last-child{border-bottom:none}
+.store-opt:hover{background:var(--rose-light)}
+.store-code{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;background:var(--ink);color:white;border-radius:4px;padding:2px 6px;flex-shrink:0;letter-spacing:.4px;white-space:nowrap}
+.store-name{font-size:13px;font-weight:500;color:var(--ink);white-space:normal;word-break:break-word;line-height:1.3}
+.store-empty{padding:12px 13px;font-size:13px;color:var(--ink-soft)}
+/* FILTER DROPDOWN */
+.filter-picker{position:relative}
+.filter-btn-icon{flex-shrink:0;width:44px;height:44px;border-radius:11px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;padding:0}
+.filter-btn-icon:hover{background:var(--rose-light);border-color:var(--rose)}
+.filter-btn-icon.active{background:var(--rose);border-color:var(--rose)}
+.filter-dropdown{display:none;position:fixed;width:240px;background:white;border:1.5px solid var(--rose);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.18);z-index:9998;overflow:hidden}
+.filter-dropdown.open{display:block}
+.filter-dd-header{padding:8px 13px;border-bottom:1px solid var(--border);background:var(--mist);display:flex;align-items:center;justify-content:space-between}
+.filter-dd-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft)}
+.filter-dd-clear{font-size:11px;color:var(--rose);cursor:pointer;font-weight:600;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0}
+.filter-dd-clear:hover{text-decoration:underline}
+.filter-opt{padding:11px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s}
+.filter-opt:last-child{border-bottom:none}
+.filter-opt:hover{background:var(--rose-light)}
+.filter-opt.selected{background:var(--rose-light)}
+.filter-opt-check{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.filter-opt.selected .filter-opt-check{background:var(--rose);border-color:var(--rose);color:white;font-size:11px}
+.filter-opt-label{font-size:13px;font-weight:500;color:var(--ink)}
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--mist);padding:4px;border-radius:11px;margin-bottom:18px}
+.tab{flex:1;padding:9px;text-align:center;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--ink-soft);border:none;background:transparent}
+.tab.active{background:white;color:var(--rose);box-shadow:0 2px 10px rgba(26,17,24,.08)}
+.tab-badge{display:inline-block;background:var(--rose-light);color:var(--rose);border-radius:20px;padding:1px 7px;font-size:10px;margin-left:4px;font-family:'DM Mono',monospace}
+.tab.active .tab-badge{background:var(--rose);color:white}
+.search-bar-wrap{margin-bottom:14px}
+.search-row{display:flex;align-items:center;gap:8px}
+.search-input-wrap{position:relative;flex:1}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;z-index:1}
+.search-input{width:100%;padding:10px 40px 10px 40px;border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--ink);background:var(--mist);outline:none;transition:all .2s}
+.search-input:focus{background:white;border-color:var(--rose);box-shadow:0 0 0 3px rgba(200,80,106,.08)}
+.search-clear-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--ink-soft);border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:white;transition:background .15s;z-index:2;line-height:1;padding:0}
+.search-clear-btn:hover{background:var(--rose)}
+.search-clear-btn.hidden{display:none}
+.search-count{font-size:12px;color:var(--ink-soft);margin-top:7px;font-family:'DM Mono',monospace}
+.filter-active-badge{display:inline-flex;align-items:center;gap:6px;background:var(--rose);color:white;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;margin-top:7px}
+.filter-active-badge.hidden{display:none}
+.table-wrap{overflow-x:auto;border-radius:11px;border:1px solid var(--border)}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;table-layout:fixed}
+table colgroup col:nth-child(1){width:44px}
+table colgroup col:nth-child(2){width:180px}
+table colgroup col:nth-child(3){width:80px}
+table colgroup col:nth-child(4){width:80px}
+table colgroup col:nth-child(5){width:80px}
+table colgroup col:nth-child(6){width:80px}
+table colgroup col:nth-child(7){width:80px}
+table colgroup col:nth-child(8){width:68px}
+thead tr{background:var(--ink)}
+thead th{padding:10px 8px;text-align:center;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden}
+thead th.col-qty{background:rgba(200,80,106,.4);color:white}
+thead th.col-total{background:rgba(212,168,67,.4);color:white}
+thead th:nth-child(1),tbody td:nth-child(1){position:sticky;left:0;z-index:4}
+thead th:nth-child(2),tbody td:nth-child(2){position:sticky;left:44px;z-index:4;box-shadow:2px 0 6px -2px rgba(26,17,24,.12)}
+thead th:nth-child(1),thead th:nth-child(2){background:var(--ink)!important;z-index:6}
+tbody td:nth-child(1),tbody td:nth-child(2){background:var(--white)}
+tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2){background:var(--rose-light)}
+tbody tr.has-val td:nth-child(1),tbody tr.has-val td:nth-child(2){background:#f0faf5}
+tbody tr.has-val:hover td:nth-child(1),tbody tr.has-val:hover td:nth-child(2){background:#e4f5ee}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--rose-light)}
+tbody tr.has-val{background:#f0faf5}
+tbody tr.has-val:hover{background:#e4f5ee}
+tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
+.td-no{text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-soft);padding-left:4px}
+.td-desc{padding:8px 10px 8px 8px}
+.prod-code{font-family:'DM Mono',monospace;font-size:10px;color:var(--rose);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-name{font-size:11.5px;font-weight:500;color:var(--ink);line-height:1.3;word-break:break-word}
+.td-total{text-align:center;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--gold)}
+.qty-cell{display:flex;align-items:center;justify-content:center;width:80px;padding:0 4px}
+.qty-input{width:60px;height:36px;padding:0 4px;border:1.5px solid var(--border);border-radius:8px;text-align:center;font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--ink);background:white;outline:none;transition:border-color .2s;-moz-appearance:textfield;display:block}
+.qty-input::-webkit-outer-spin-button,.qty-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qty-input:focus{border-color:var(--rose);box-shadow:0 0 0 2px rgba(200,80,106,.1)}
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);padding:11px 16px;padding-bottom:calc(11px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,.07);z-index:400}
+.stats{display:flex;gap:16px}
+.stat{text-align:center}
+.stat-num{font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:var(--ink);line-height:1}
+.stat-num.r{color:var(--rose)}
+.stat-lbl{font-size:10px;color:var(--ink-soft);letter-spacing:.3px;margin-top:2px}
+.btn-export{padding:11px 22px;background:var(--rose);color:white;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .2s;box-shadow:0 4px 12px rgba(200,80,106,.35)}
+.btn-export:hover{background:var(--rose-dark);transform:translateY(-1px)}
+.btn-export:active{transform:translateY(0)}
+.btn-threedot{width:42px;height:42px;border-radius:11px;border:1.5px solid var(--border);background:var(--white);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);transition:all .15s;flex-shrink:0;letter-spacing:1px;font-weight:900}
+.btn-threedot:hover{background:var(--mist);border-color:var(--ink-soft)}
+.btn-back-bar{height:42px;padding:0 16px;border-radius:11px;border:1.5px solid var(--border);background:var(--white);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink);transition:all .15px;flex-shrink:0;font-weight:600}
+.btn-back-bar:hover{background:var(--mist);border-color:var(--ink-soft)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:transparent;z-index:200}
+.sidebar-overlay.open{display:block}
+.sidebar{position:fixed;bottom:72px;right:12px;width:230px;background:var(--white);border:1.5px solid var(--border);border-radius:16px;z-index:201;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.18);opacity:0;transform:translateY(10px) scale(.97);pointer-events:none;transition:opacity .18s ease,transform .18s ease;overflow:hidden}
+.sidebar.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.sidebar-header{padding:11px 14px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sidebar-close{background:none;border:none;color:var(--ink-soft);font-size:16px;cursor:pointer;padding:2px}
+.sidebar-body{flex:1;overflow-y:auto;padding:4px 0}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13.5px;font-weight:500;color:var(--ink);cursor:pointer;transition:background .12s}
+.sidebar-item:hover{background:var(--mist)}
+.sidebar-item.active{color:var(--rose)}
+.sidebar-icon{font-size:16px;width:20px;flex-shrink:0}
+.sidebar-item.danger{color:#e74c3c}
+.sidebar-item.danger:hover{background:#fdf0f0}
+.sidebar-divider{height:1px;background:var(--border);margin:4px 0}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:white;border-radius:16px;padding:28px 24px 20px;max-width:360px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.2)}
+.modal-icon{font-size:36px;margin-bottom:10px;text-align:center}
+.modal-title{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:6px;text-align:center}
+.modal-desc{font-size:13px;color:var(--ink-soft);line-height:1.5;margin-bottom:22px;text-align:center;white-space:pre-line}
+.modal-btns{display:flex;gap:10px}
+.modal-btn{flex:1;padding:12px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.modal-btn.cancel{background:var(--mist);color:var(--ink-soft)}
+.modal-btn.cancel:hover{background:var(--border)}
+.modal-btn.confirm{background:#e74c3c;color:white}
+.modal-btn.confirm:hover{background:#c0392b}
+.modal-btn.primary{background:var(--rose);color:white}
+.modal-btn.primary:hover{background:var(--rose-dark)}
+.full-page{display:none;position:fixed;inset:0;z-index:150;background:var(--mist);flex-direction:column;padding-top:64px;padding-bottom:66px}
+.full-page.open{display:flex}
+.page-scroll{flex:1;overflow-y:auto;padding:16px 14px 30px}
+.json-card{background:var(--ink);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.json-card-header{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.json-card-title{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.6);flex:1}
+.json-header-btns{display:flex;gap:6px;flex-shrink:0}
+.json-hbtn{padding:5px 12px;border-radius:7px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);font-family:'DM Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.json-hbtn:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.35);color:white}
+.json-hbtn.danger{border-color:rgba(200,80,106,.4);color:rgba(240,128,144,.9)}
+.json-hbtn.danger:hover{background:rgba(200,80,106,.2);border-color:var(--rose);color:#f08090}
+.json-textarea{width:100%;padding:14px 16px;border:none;outline:none;resize:vertical;font-family:'DM Mono',monospace;font-size:13px;line-height:1.6;background:#0d0810;color:#e8d5b0;min-height:200px;border-radius:0}
+.json-textarea::placeholder{color:rgba(255,255,255,.25)}
+.json-undo-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.15)}
+.json-undo-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);font-family:'DM Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.json-undo-btn:hover:not(:disabled){background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:white}
+.json-undo-btn:disabled{opacity:.3;cursor:not-allowed}
+.json-undo-btn.undo-active{border-color:rgba(200,80,106,.5);color:#f08090}
+.json-undo-btn.undo-active:hover{background:rgba(200,80,106,.15);border-color:var(--rose)}
+.json-undo-btn.redo-active{border-color:rgba(61,122,94,.5);color:#6fcfa0}
+.json-undo-btn.redo-active:hover{background:rgba(61,122,94,.15);border-color:#3d7a5e}
+.json-undo-stack-info{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);margin-left:auto}
+.json-field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px}
+.json-field-btn{padding:12px 8px;border-radius:10px;border:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;text-align:center}
+.json-field-btn:hover{border-color:rgba(200,80,106,.6);background:rgba(200,80,106,.12);color:rgba(255,255,255,.9)}
+.json-field-btn.selected{border-color:var(--rose);background:rgba(200,80,106,.25);color:white}
+.json-run-btn{width:calc(100% - 32px);margin:0 16px 16px;padding:14px;border-radius:11px;border:none;background:var(--rose);color:white;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(200,80,106,.4)}
+.json-run-btn:hover{background:var(--rose-dark);transform:translateY(-1px)}
+.json-run-btn:disabled{background:#555;box-shadow:none;cursor:not-allowed;transform:none}
+.json-preview{padding:14px 16px;border-top:1px solid rgba(255,255,255,.08)}
+.json-preview-item{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.json-preview-item:last-child{border-bottom:none}
+.json-preview-cat{font-family:'DM Mono',monospace;font-size:11px;color:var(--rose);min-width:100px;flex-shrink:0;padding-top:1px;word-break:break-all}
+.json-preview-entries{flex:1;min-width:0}
+.json-preview-entry{font-size:12px;color:rgba(255,255,255,.7);line-height:1.7}
+.json-preview-qty{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#6fcfa0}
+.json-preview-found{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.35)}
+.json-preview-notfound{font-family:'DM Mono',monospace;font-size:11px;color:#f08090}
+.json-status{padding:10px 16px;font-size:12px;color:rgba(255,255,255,.5);font-family:'DM Mono',monospace;min-height:36px}
+.json-status.error{color:#f08090}
+.json-status.ok{color:#6fcfa0}
+.wa-page{display:none;position:fixed;top:0;left:0;right:0;bottom:60px;z-index:300;background:#ECE5DD;flex-direction:column;font-family:'DM Sans',sans-serif}
+.wa-page.open{display:flex}
+.wa-topbar{background:#075E54;color:white;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.2);flex-shrink:0}
+.wa-back{background:none;border:none;color:white;font-size:20px;cursor:pointer;padding:0;line-height:1}
+.wa-topbar-title{font-size:16px;font-weight:600;flex:1}
+.wa-copy-all{background:#25D366;border:none;color:white;padding:7px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s}
+.wa-copy-all:hover{background:#1ebe5a}
+.wa-copy-all.copied{background:#555}
+.wa-scroll{flex:1;overflow-y:auto;padding:14px 12px 16px}
+.wa-section{background:#f0f9f5;border:1.5px solid #25D366;border-radius:10px;margin-bottom:12px;overflow:hidden}
+.wa-section-header{background:#075E54;color:white;padding:8px 14px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between}
+.wa-edit-btn{background:rgba(255,255,255,.2);border:none;color:white;padding:3px 10px;border-radius:12px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.wa-edit-btn:hover{background:rgba(255,255,255,.35)}
+.wa-textarea{width:100%;padding:10px 14px;border:none;outline:none;resize:none;font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.55;background:transparent;color:#111;min-height:40px}
+.wa-readonly{padding:10px 14px;font-size:14px;line-height:1.7;color:#111;white-space:pre-wrap;word-break:break-word}
+.wa-readonly b{font-weight:700}
+.wa-readonly s{text-decoration:line-through}
+.wa-hint{text-align:center;font-size:11px;color:#888;padding:6px 0 0;flex-shrink:0}
+.report-card{background:#1a1118;border-radius:14px;overflow:hidden;margin-bottom:14px}
+.report-card-header{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.report-card-title{font-family:'DM Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.5)}
+.report-badge{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.report-badge.red{background:rgba(200,80,106,0.25);color:#f08090}
+.report-badge.orange{background:rgba(230,126,34,0.25);color:#f5a55a}
+.btn-copy{padding:5px 13px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.5px;transition:all .15s}
+.btn-copy.red{background:rgba(200,80,106,0.2);color:#f08090}
+.btn-copy.red:hover{background:rgba(200,80,106,0.4)}
+.btn-copy.orange{background:rgba(230,126,34,0.2);color:#f5a55a}
+.btn-copy.orange:hover{background:rgba(230,126,34,0.4)}
+.btn-copy.copied{background:rgba(61,122,94,0.35);color:#6fcfa0}
+.report-list{padding:8px 0;max-height:260px;overflow-y:auto}
+.report-item{display:flex;align-items:flex-start;gap:10px;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.report-item:last-child{border-bottom:none}
+.report-num{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.25);min-width:22px;padding-top:1px;flex-shrink:0}
+.report-item-body{flex:1;min-width:0}
+.report-kode{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:rgba(255,255,255,0.85);margin-bottom:2px}
+.report-desc{font-size:11px;color:rgba(255,255,255,0.4);line-height:1.35}
+.report-stok{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;background:rgba(230,126,34,0.2);color:#f5a55a;align-self:center}
+.report-empty{padding:20px 16px;text-align:center;font-size:13px;color:rgba(255,255,255,.25)}
+.tbs-search-wrap{position:relative;margin-bottom:14px}
+.tbs-search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none}
+.tbs-search{width:100%;padding:11px 13px 11px 40px;border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--ink);background:white;outline:none;transition:all .2s}
+.tbs-search:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(200,80,106,.08)}
+.tbs-card{background:var(--ink);border-radius:14px;padding:16px;margin-bottom:12px}
+.tbs-card-title{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:12px}
+.tbs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tbs-col{background:rgba(255,255,255,.06);border-radius:9px;padding:10px 8px;text-align:center}
+.tbs-col-label{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:.4px;margin-bottom:4px;text-transform:uppercase}
+.tbs-col-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:white;line-height:1}
+.tbs-col-val.gold{color:var(--gold)}
+.tbs-matched{font-size:12px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;margin-top:10px;text-align:center}
+.tbs-empty{text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:14px}
+.save-badge{position:fixed;bottom:72px;right:16px;background:var(--ink);color:white;border-radius:20px;padding:4px 10px;font-size:11px;font-family:'DM Mono',monospace;opacity:0;transition:opacity .4s;pointer-events:none;z-index:98}
+.save-badge.show{opacity:1}
+.toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:var(--ink);color:white;padding:11px 18px;border-radius:9px;font-size:13px;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hidden{display:none!important}
+
+/* ===== AUDIO RECORD PAGE ===== */
+.audio-page{display:none;position:fixed;inset:0;z-index:150;background:var(--mist);flex-direction:column;padding-top:64px;padding-bottom:66px}
+.audio-page.open{display:flex}
+.audio-scroll{flex:1;overflow-y:auto;padding:16px 14px 30px}
+.audio-card{background:var(--white);border-radius:14px;box-shadow:0 2px 12px rgba(26,17,24,.08);margin-bottom:14px;overflow:hidden}
+.audio-card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.audio-card-icon{width:32px;height:32px;border-radius:9px;background:var(--rose-light);display:flex;align-items:center;justify-content:16px;flex-shrink:0}
+.audio-card-title{font-size:13px;font-weight:700;color:var(--ink)}
+.audio-card-body{padding:16px}
+.audio-name-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--ink);background:var(--mist);outline:none;transition:all .2s;margin-bottom:8px}
+.audio-name-input:focus{background:white;border-color:var(--rose);box-shadow:0 0 0 3px rgba(200,80,106,.08)}
+.audio-name-hint{font-size:11px;color:var(--ink-soft);margin-bottom:14px;font-family:'DM Mono',monospace}
+.audio-controls{display:flex;align-items:center;gap:14px;padding:14px 0 4px}
+.rec-btn{width:58px;height:58px;border-radius:50%;border:2.5px solid #e74c3c;background:rgba(231,76,60,.12);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;position:relative}
+.rec-btn-inner{width:44px;height:44px;border-radius:50%;background:#e74c3c;box-shadow:0 4px 16px rgba(231,76,60,.5);transition:all .2s;display:flex;align-items:center;justify-content:center}
+.rec-btn:hover .rec-btn-inner{transform:scale(1.08)}
+.rec-btn.recording .rec-btn-inner{border-radius:8px;width:22px;height:22px;animation:recpulse 1s ease-in-out infinite}
+.rec-btn.recording{animation:recring 1s ease-in-out infinite;border-color:#e74c3c}
+@keyframes recpulse{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.6)}50%{box-shadow:0 0 0 10px rgba(231,76,60,0)}}
+@keyframes recring{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.3)}50%{box-shadow:0 0 0 8px rgba(231,76,60,0)}}
+.stop-btn{width:58px;height:58px;border-radius:12px;border:2.5px solid var(--ink-soft);background:rgba(26,17,24,.06);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.stop-btn:hover{background:rgba(26,17,24,.12);border-color:var(--ink)}
+.stop-btn-inner{width:24px;height:24px;background:var(--ink);border-radius:4px}
+.stop-btn:disabled{opacity:.3;cursor:not-allowed}
+.rec-timer-wrap{flex:1;display:flex;flex-direction:column;gap:4px}
+.rec-status{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-soft);font-family:'DM Mono',monospace}
+.rec-status.live{color:#e74c3c;animation:blink .8s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.rec-timer{font-size:28px;font-weight:700;font-family:'DM Mono',monospace;color:var(--ink);letter-spacing:2px;line-height:1}
+.audio-viz{height:36px;border-radius:8px;background:var(--mist);overflow:hidden;display:flex;align-items:center;padding:0 8px;gap:2px;margin-top:8px}
+.viz-bar{width:3px;border-radius:2px;background:var(--rose);opacity:.4;transition:height .1s}
+/* format badge in audio list */
+.audio-fmt-badge{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(61,122,94,.25);color:#6fcfa0;letter-spacing:.3px;text-transform:uppercase}
+.audio-results-card{background:var(--ink);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.audio-results-header{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between}
+.audio-results-title{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.audio-results-count{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.3)}
+.audio-empty{padding:28px 16px;text-align:center;font-size:13px;color:rgba(255,255,255,.3)}
+.audio-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);transition:background .12s}
+.audio-item:last-child{border-bottom:none}
+.audio-item:hover{background:rgba(255,255,255,.04)}
+.audio-item-icon{width:36px;height:36px;border-radius:9px;background:rgba(200,80,106,.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.audio-item-info{flex:1;min-width:0}
+.audio-item-name{font-size:13px;font-weight:600;color:rgba(255,255,255,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.audio-item-meta{font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.audio-item-btns{display:flex;gap:6px;flex-shrink:0}
+.audio-action-btn{width:34px;height:34px;border-radius:9px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s}
+.audio-action-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:white}
+.audio-action-btn.play-btn:hover{background:rgba(61,122,94,.25);border-color:#3d7a5e;color:#6fcfa0}
+.audio-action-btn.play-btn.playing{background:rgba(61,122,94,.35);border-color:#3d7a5e;color:#6fcfa0}
+.audio-action-btn.dl:hover{background:rgba(61,122,94,.25);border-color:#3d7a5e;color:#6fcfa0}
+.audio-action-btn.del:hover{background:rgba(200,80,106,.25);border-color:var(--rose);color:#f08090}
+.audio-player-mini{background:rgba(255,255,255,.06);border-top:1px solid rgba(255,255,255,.06);padding:8px 14px;display:flex;align-items:center;gap:8px}
+.audio-player-mini audio{width:100%;height:32px;filter:invert(0.85) hue-rotate(180deg)}
+/* FLOATING REC BAR */
+.rec-float-bar{position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:9000;background:var(--ink);border:1.5px solid #e74c3c;border-radius:30px;padding:7px 14px 7px 10px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(231,76,60,.35);pointer-events:auto;white-space:nowrap}
+.rec-float-bar.hidden{display:none!important}
+.rec-float-dot{width:12px;height:12px;border-radius:50%;background:#e74c3c;animation:recpulse 1s ease-in-out infinite;flex-shrink:0}
+.rec-float-time{font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:white;letter-spacing:1.5px;min-width:44px}
+.rec-float-stop{padding:5px 12px;border-radius:20px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:white;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.rec-float-stop:hover{background:rgba(231,76,60,.4);border-color:#e74c3c}
+/* audio delete modal */
+.modal-overlay.del-modal .modal-btn.confirm{background:#e74c3c}
+
+/* ===== LOG ACTIVITY ===== */
+.log-page-scroll{flex:1;overflow-y:auto;padding:16px 14px 30px}
+.log-card{background:var(--ink);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.log-card-header{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;gap:8px}
+.log-card-title{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.6);flex:1}
+.log-header-btns{display:flex;gap:6px;flex-shrink:0}
+.log-hbtn{padding:5px 12px;border-radius:7px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);font-family:'DM Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.log-hbtn:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.35);color:white}
+.log-hbtn.danger{border-color:rgba(200,80,106,.4);color:rgba(240,128,144,.9)}
+.log-hbtn.danger:hover{background:rgba(200,80,106,.2);border-color:var(--rose);color:#f08090}
+.log-hbtn.green{border-color:rgba(61,122,94,.5);color:#6fcfa0}
+.log-hbtn.green:hover{background:rgba(61,122,94,.2);border-color:#3d7a5e}
+.log-textarea{width:100%;padding:14px 16px;border:none;outline:none;resize:none;font-family:'DM Mono',monospace;font-size:12px;line-height:1.7;background:#0d0810;color:#b8e0c8;min-height:300px;border-radius:0}
+.log-count-bar{padding:8px 16px;background:rgba(0,0,0,.2);border-top:1px solid rgba(255,255,255,.06);font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);display:flex;align-items:center;justify-content:space-between}
+</style>
+</head>
+<body>
+<div class="header">
+  <button class="header-back-btn" id="headerBackBtn" style="visibility:hidden" onclick="handleHeaderBack()">&#8592;</button>
+  <div class="header-logo-wrap">
+    <span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span>
+    <span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span>
+  </div>
+  <div style="width:38px"></div>
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span style="font-size:12px;font-weight:700;color:var(--ink-soft);letter-spacing:.8px;text-transform:uppercase;font-family:'DM Mono',monospace;">Menu</span>
+    <button class="sidebar-close" onclick="closeSidebar()">&#x2715;</button>
+  </div>
+  <div class="sidebar-body">
+    <div class="sidebar-item active" onclick="closeSidebar()"><span class="sidebar-icon">&#x1F4CB;</span> Form Opname</div>
+    <div class="sidebar-item" onclick="closeSidebar();showSidebarPage('listproduk')"><span class="sidebar-icon">&#x1F4E6;</span> List Produk</div>
+    <div class="sidebar-item" onclick="closeSidebar();showSidebarPage('totalsearch')"><span class="sidebar-icon">&#x1F522;</span> Total by Search</div>
+    <div class="sidebar-item" onclick="closeSidebar();showSidebarPage('importjson')"><span class="sidebar-icon">&#x1F4E5;</span> Import JSON</div>
+    <div class="sidebar-item" onclick="closeSidebar();showSidebarPage('logactivity')"><span class="sidebar-icon">&#x1F4DD;</span> Log Activity</div>
+    <div class="sidebar-item" onclick="closeSidebar();showSidebarPage('audiorecord')"><span class="sidebar-icon">&#x1F3A4;</span> Audio Record</div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-item" onclick="closeSidebar();openWAReport()"><span class="sidebar-icon">&#x1F4AC;</span> Hasil Report WA</div>
+    <div class="sidebar-item" onclick="closeSidebar();refreshPage()"><span class="sidebar-icon">&#x1F504;</span> Refresh Halaman</div>
+    <div class="sidebar-item danger" onclick="closeSidebar();openResetModal()"><span class="sidebar-icon">&#x1F5D1;&#xFE0F;</span> Reset Semua Data</div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">&#x1F4CB;</div>
+      <div><div class="card-title">Informasi Opname</div><div class="card-desc">Isi data sebelum memulai penghitungan stok</div></div>
+    </div>
+    <div class="card-body">
+      <div class="info-grid">
+        <div>
+          <label class="field-label">Sheet Store</label>
+          <select class="field-select" id="sheetSelect" onchange="switchStore(this.value)">
+            <option value="AEON">AEON</option>
+            <option value="WATSONS">WATSONS</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Tanggal Opname</label>
+          <input type="date" class="field-input" id="tanggal" oninput="scheduleSave()">
+        </div>
+        <div>
+          <label class="field-label">Nama Toko</label>
+          <div class="store-picker" id="storePicker">
+            <button type="button" class="store-display" id="storeDisplay" onclick="toggleStoreDD()">Pilih toko...</button>
+            <span class="store-arrow">&#9662;</span>
+            <div class="store-dropdown" id="storeDD">
+              <div class="store-search-wrap"><input type="text" class="store-search" id="storeSearch" placeholder="Cari kode atau nama toko..." oninput="renderStoreList(this.value)"></div>
+              <div class="store-list" id="storeList"></div>
+            </div>
+          </div>
+          <input type="hidden" id="storeCode" value="">
+          <input type="hidden" id="storeName2" value="">
+        </div>
+        <div>
+          <label class="field-label">Nama BA</label>
+          <input type="text" class="field-input" id="namaBA" placeholder="Nama Beauty Advisor..." oninput="scheduleSave()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">&#x1F4E6;</div>
+      <div><div class="card-title">Data Stok Produk</div><div class="card-desc">Masukkan QTY di setiap lokasi penyimpanan</div></div>
+    </div>
+    <div class="card-body">
+      <div class="tabs">
+        <button class="tab active" id="tabAEON" onclick="switchStore('AEON')">AEON <span class="tab-badge" id="badgeAEON">0</span></button>
+        <button class="tab" id="tabWATSONS" onclick="switchStore('WATSONS')">WATSONS <span class="tab-badge" id="badgeWATSONS">0</span></button>
+      </div>
+      <div class="search-bar-wrap">
+        <div class="search-row">
+          <div class="search-input-wrap">
+            <span class="search-icon">&#x1F50D;</span>
+            <input type="text" class="search-input" id="searchInput" placeholder="Cari nama atau kode produk..." oninput="onSearchInput()">
+            <button class="search-clear-btn hidden" id="searchClearBtn" onclick="clearSearch(event)">&#x2715;</button>
+          </div>
+          <div class="filter-picker" id="filterPicker">
+            <button type="button" class="filter-btn-icon" id="filterBtnIcon" onclick="toggleFilterDD()" title="Filter Kategori">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="filterIconSvg">
+                <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                <circle cx="8" cy="6" r="2.5" fill="white" stroke="currentColor" stroke-width="2.2"/>
+                <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                <circle cx="15" cy="12" r="2.5" fill="white" stroke="currentColor" stroke-width="2.2"/>
+                <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                <circle cx="10" cy="18" r="2.5" fill="white" stroke="currentColor" stroke-width="2.2"/>
+              </svg>
+            </button>
+            <div class="filter-dropdown" id="filterDD">
+              <div class="filter-dd-header">
+                <span class="filter-dd-title">Filter Kategori</span>
+                <button class="filter-dd-clear" onclick="clearFilterDD()">Reset</button>
+              </div>
+              <div id="filterOptList"></div>
+            </div>
+          </div>
+        </div>
+        <div id="filterActiveBadge" class="filter-active-badge hidden"></div>
+        <div class="search-count" id="searchCount"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <colgroup><col><col><col><col><col><col><col><col></colgroup>
+          <thead>
+            <tr>
+              <th style="text-align:center">No</th>
+              <th style="text-align:left;padding-left:8px">Deskripsi Barang</th>
+              <th class="col-qty">Backwall</th>
+              <th class="col-qty">Laci</th>
+              <th class="col-qty">Rak Reg</th>
+              <th class="col-qty">Rak Promo</th>
+              <th class="col-qty">Gudang</th>
+              <th class="col-total">Total</th>
+            </tr>
+          </thead>
+          <tbody id="productBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="stats">
+    <div class="stat"><div class="stat-num r" id="statFilled">0</div><div class="stat-lbl">Diisi</div></div>
+    <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Total Stok</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="btn-back-bar" id="btnBackBar" style="display:none" onclick="handleBottomBack()">&#8592;</button>
+    <button class="btn-export" onclick="exportExcel()">&#11015;&#65039; Export Excel</button>
+    <button class="btn-threedot" id="btnThreeDot" onclick="toggleMenu()">&#8943;</button>
+  </div>
+</div>
+
+<!-- RESET MODAL -->
+<div class="modal-overlay" id="resetOverlay" onclick="closeResetOnBg(event)">
+  <div class="modal">
+    <div class="modal-icon">&#x26A0;&#xFE0F;</div>
+    <div class="modal-title">Reset Semua Data?</div>
+    <div class="modal-desc">Semua QTY yang sudah diisi akan dihapus permanen dan tidak bisa dikembalikan.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeResetModal()">Tidak</button>
+      <button class="modal-btn confirm" onclick="confirmReset()">Ya, Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT JSON CONFIRM MODAL -->
+<div class="modal-overlay" id="jsonConfirmOverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x1F4E5;</div>
+    <div class="modal-title" id="jsonConfirmTitle">Konfirmasi Import</div>
+    <div class="modal-desc" id="jsonConfirmDesc"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeJsonConfirm()">Batal</button>
+      <button class="modal-btn primary" onclick="executeImport()">Ya, Jalankan</button>
+    </div>
+  </div>
+</div>
+
+<!-- UNDO CONFIRM MODAL -->
+<div class="modal-overlay" id="undoConfirmOverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x21A9;&#xFE0F;</div>
+    <div class="modal-title">Yakin untuk Undo?</div>
+    <div class="modal-desc" id="undoConfirmDesc">Perubahan dari import terakhir akan dibatalkan.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeUndoConfirm()">Tidak</button>
+      <button class="modal-btn confirm" onclick="confirmUndo()">Ya, Undo</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIO DELETE MODAL -->
+<div class="modal-overlay del-modal" id="audioDelOverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x1F5D1;&#xFE0F;</div>
+    <div class="modal-title">Hapus Rekaman?</div>
+    <div class="modal-desc" id="audioDelDesc">Rekaman ini akan dihapus permanen.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeAudioDelModal()">Batal</button>
+      <button class="modal-btn confirm" onclick="confirmDeleteAudio()">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div class="save-badge" id="saveBadge">&#x1F4BE; Tersimpan</div>
+<div class="toast" id="toast"></div>
+
+<!-- FLOATING REC BAR -->
+<div class="rec-float-bar hidden" id="recFloatBar">
+  <div class="rec-float-dot"></div>
+  <div class="rec-float-time" id="recFloatTime">0:00</div>
+  <button class="rec-float-stop" onclick="stopRecording()">&#x23F9; Stop</button>
+</div>
+
+<!-- WA PAGE -->
+<div class="wa-page" id="waPage">
+  <div class="wa-topbar">
+    <button class="wa-back" onclick="closeWAReport()">&#8592;</button>
+    <div class="wa-topbar-title">&#x1F4AC; Report WhatsApp</div>
+    <button class="wa-copy-all" id="waCopyBtn" onclick="copyWAReport()">Copy Semua</button>
+  </div>
+  <div class="wa-scroll" id="waScroll"></div>
+  <div class="wa-hint">Tap "Copy Semua" lalu paste ke WhatsApp</div>
+</div>
+
+<!-- LIST PRODUK PAGE -->
+<div class="full-page" id="pageListProduk">
+  <div class="page-scroll" id="listProdukContent"></div>
+</div>
+
+<!-- TOTAL BY SEARCH PAGE -->
+<div class="full-page" id="pageTotalSearch">
+  <div class="page-scroll">
+    <div class="tbs-search-wrap">
+      <span class="tbs-search-icon">&#x1F50D;</span>
+      <input type="text" class="tbs-search" id="tbsSearch" placeholder="Cari nama atau kode produk..." oninput="runTotalSearch()">
+    </div>
+    <div id="tbsResult"></div>
+  </div>
+</div>
+
+<!-- IMPORT JSON PAGE -->
+<div class="full-page" id="pageImportJSON">
+  <div class="page-scroll">
+    <div class="json-card">
+      <div class="json-card-header">
+        <span class="json-card-title">&#x1F4E5; Paste JSON di sini</span>
+        <div class="json-header-btns">
+          <button class="json-hbtn" onclick="pasteFromClipboard()">&#x1F4CB; Paste</button>
+          <button class="json-hbtn danger" onclick="clearJSONTextarea()">&#x2715; Clear</button>
+        </div>
+      </div>
+      <textarea class="json-textarea" id="jsonInput" placeholder='Contoh:
+{
+  "eye_pencil": {
+    "BLACK": 3,
+    "BROWN": 2
+  },
+  "lip_cream_matte": {
+    "01 DUSKY NUDE": 3,
+    "11 RED BEAN": 2
+  }
+}' oninput="onJSONInput()"></textarea>
+      <div class="json-undo-bar">
+        <button class="json-undo-btn" id="btnUndo" onclick="openUndoConfirm()" disabled>&#x21A9; Undo</button>
+        <button class="json-undo-btn redo-active" id="btnRedo" onclick="doRedo()" disabled>&#x21AA; Redo</button>
+        <span class="json-undo-stack-info" id="undoStackInfo"></span>
+      </div>
+      <div class="json-status" id="jsonStatus">Paste JSON di atas untuk memulai</div>
+    </div>
+    <div class="json-card">
+      <div class="json-card-header">
+        <span class="json-card-title">&#x1F4CD; Pilih Field Tujuan</span>
+      </div>
+      <div class="json-field-grid">
+        <button class="json-field-btn selected" data-field="bw" onclick="selectField(this)">Backwall</button>
+        <button class="json-field-btn" data-field="la" onclick="selectField(this)">Laci</button>
+        <button class="json-field-btn" data-field="rr" onclick="selectField(this)">Rak Reguler</button>
+        <button class="json-field-btn" data-field="rp" onclick="selectField(this)">Rak Promo</button>
+        <button class="json-field-btn" data-field="gu" onclick="selectField(this)">Gudang</button>
+      </div>
+      <button class="json-run-btn" id="jsonRunBtn" onclick="openJsonConfirm()" disabled>Jalankan JSON</button>
+    </div>
+    <div class="json-card" id="jsonPreviewCard" style="display:none">
+      <div class="json-card-header">
+        <span class="json-card-title">&#x1F50D; Preview Pencocokan</span>
+      </div>
+      <div class="json-preview" id="jsonPreview"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LOG ACTIVITY PAGE -->
+<div class="full-page" id="pageLogActivity">
+  <div class="log-page-scroll">
+    <div class="log-card">
+      <div class="log-card-header">
+        <span class="log-card-title">&#x1F4DD; Activity Log</span>
+        <div class="log-header-btns">
+          <button class="log-hbtn" onclick="copyLogActivity()">&#x1F4CB; Copy</button>
+          <button class="log-hbtn green" onclick="downloadLogActivity()">&#x2B07; Download .txt</button>
+          <button class="log-hbtn danger" onclick="clearLogActivity()">&#x2715; Clear</button>
+        </div>
+      </div>
+      <textarea class="log-textarea" id="logTextarea" readonly placeholder="Log aktivitas akan muncul di sini saat Anda mengisi QTY produk..."></textarea>
+      <div class="log-count-bar">
+        <span id="logCountInfo">0 entri</span>
+        <span id="logStoreInfo"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIO RECORD PAGE -->
+<div class="full-page" id="pageAudioRecord">
+  <div class="audio-scroll">
+    <div class="audio-card">
+      <div class="audio-card-header">
+        <div class="audio-card-icon">&#x1F3A4;</div>
+        <div class="audio-card-title">Rekam Audio</div>
+      </div>
+      <div class="audio-card-body">
+        <input type="text" class="audio-name-input" id="audioNameInput" placeholder="Nama rekaman (opsional)..." value="">
+        <div class="audio-name-hint">Nama file: [Nama Rekaman] [Kode Toko] [Tanggal] — kosongkan untuk nama otomatis</div>
+        <div class="audio-controls">
+          <button class="rec-btn" id="recBtn" onclick="toggleRecording()">
+            <div class="rec-btn-inner"></div>
+          </button>
+          <button class="stop-btn" id="stopBtn" onclick="stopRecording()" disabled>
+            <div class="stop-btn-inner"></div>
+          </button>
+          <div class="rec-timer-wrap">
+            <div class="rec-status" id="recStatus">Siap merekam</div>
+            <div class="rec-timer" id="recTimer">0:00</div>
+          </div>
+        </div>
+        <div class="audio-viz" id="audioViz"></div>
+      </div>
+    </div>
+    <div class="audio-results-card" id="audioResultsCard">
+      <div class="audio-results-header">
+        <div class="audio-results-title">&#x1F4C2; Rekaman Tersimpan</div>
+        <div class="audio-results-count" id="audioResultsCount">0 file</div>
+      </div>
+      <div id="audioList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// CATEGORY MAP
+// ================================================================
+var CAT_MAP = {
+  brow_pop:['brow pop'],
+  keychain_lip_bullet:['keychain lip bullet'],
+  lite_matte_lip_cream:['lite matte lip cream'],
+  two_way_cake_refill:['two way cake refill'],
+  two_way_cake:['two way cake'],
+  healthy_glow_cushion_refill:['cushion refill'],
+  healthy_glow_cushion:['healthy glow cushion'],
+  urban_eyebrow_pencil:['urban eyebrow pencil'],
+  eye_pencil:['jdeye-001','jdeye-002','jdeye-006','jdeye-007'],
+  urban_eyeshadow_afterglow:['afterglow'],
+  urban_eyeshadow_afterglam:['afterglam'],
+  urban_liquid_eyeliner:['urban liquid eyeliner'],
+  eyeliner_pen:['jdeye-1201'],
+  mascara:['jdeye-1301'],
+  urban_volume_mascara:['urban volume mascara'],
+  cheek_blossom:['cheek blossom'],
+  caffe_matte_lip_cream:['caffe matte'],
+  lip_cream_matte:['jdlip-23'],
+  lipstick_int_matte:['lipmatte intense','jdlip-2404','jdlip-2406','12j.pclcc','12j.pclmm','12j.pclsp','12j.pclba'],
+  cheek_liptint:['cheek & liptint','jdlip-250','12j.pcclj','12j.pcclr','12j.pcclw'],
+  lip_crayon_satin:['lip crayon satin','jdlip-260'],
+  lip_velvet:['lip velvet','jdlip-270'],
+  jelly_tint:['jelly tint','jdlip-280','12j.pcjt'],
+  lip_moist_serum:['jdlms-1001'],
+  lip_moist_essence:['jdlms-1002'],
+  wow_brow_pomade:['wow brow pomade','12j.pcwp'],
+  ceramide_moisturizing_gel:['ceramide'],
+  acne_spot:['jdacs-1001'],
+  dark_spot:['jddks-1001'],
+  even_better_liquid_foundation:['12j.pclf'],
+  soft_eyebrow_pencil:['jdeye-20'],
+  hair_color:['jdhrc-'],
+  hair_color_shampoo:['jdhsc-'],
+  nail_polish:['nail polish','jdnpl-'],
+  sheet_mask:['sheet mask'],
+  peeling_gel:['peeling gel'],
+  liquid_foundation:['jdbe-2'],
+  dawn_eyeshadow_palette:['jdesp-1001'],
+  desert_eyeshadow_palette:['jdesp-1002'],
+  ocean_eyeshadow_palette:['jdesp-1003'],
+  twilight_eyeshadow_palette:['jdesp-1004'],
+  whitening_milky_serum:['jdser-2001'],
+  crystalice_eye_serum:['jdser-3001'],
+  serum:['jdser-'],
+  sunscreen_spf40:['12j.pcsp4'],
+  sunscreen_spf50:['12j.pcsp5'],
+  sunscreen_spf30:['12j.pcspf']
+};
+
+// ================================================================
+// FILTER OPTIONS
+// ================================================================
+var FILTER_OPTIONS = [
+  {key:'lipstick_int_matte',label:'💄 Lipstick Int Matte',keywords:['lipmatte intense','jdlip-2404','jdlip-2406','12j.pclcc','12j.pclmm','12j.pclsp','12j.pclba'],exclude:[]},
+  {key:'two_way_cake',label:'🎀 Two Way Cake',keywords:['two way cake'],exclude:['refill']},
+  {key:'healthy_glow_cushion',label:'✨ Cushion',keywords:['healthy glow cushion'],exclude:['refill']}
+];
+var _activeFilterKey = null;
+var _filterDDOpen = false;
+
+function isProductInFilter(p, filterKey) {
+  if (!filterKey) return true;
+  var opt = null;
+  for (var i = 0; i < FILTER_OPTIONS.length; i++) { if (FILTER_OPTIONS[i].key === filterKey) { opt = FILTER_OPTIONS[i]; break; } }
+  if (!opt) return false;
+  var d = p.desc.toLowerCase(), k = p.kode.toLowerCase();
+  var matched = false;
+  for (var j = 0; j < opt.keywords.length; j++) { if (d.indexOf(opt.keywords[j]) >= 0 || k.indexOf(opt.keywords[j]) >= 0) { matched = true; break; } }
+  if (!matched) return false;
+  var excl = opt.exclude || [];
+  for (var e = 0; e < excl.length; e++) { if (d.indexOf(excl[e]) >= 0 || k.indexOf(excl[e]) >= 0) return false; }
+  return true;
+}
+
+function buildFilterOptList() {
+  var el = document.getElementById('filterOptList'), html = '';
+  for (var i = 0; i < FILTER_OPTIONS.length; i++) {
+    var opt = FILTER_OPTIONS[i], sel = _activeFilterKey === opt.key;
+    html += '<div class="filter-opt'+(sel?' selected':'')+'" data-key="'+opt.key+'" onclick="pickFilter(\''+opt.key+'\')"><div class="filter-opt-check">'+(sel?'&#10003;':'')+'</div><div class="filter-opt-label">'+opt.label+'</div></div>';
+  }
+  el.innerHTML = html;
+}
+function toggleFilterDD() { _filterDDOpen ? closeFilterDD() : openFilterDD(); }
+function openFilterDD() {
+  _filterDDOpen = true;
+  var dd = document.getElementById('filterDD'), btn = document.getElementById('filterBtnIcon'), rect = btn.getBoundingClientRect();
+  dd.style.top = (rect.bottom + 4) + 'px'; dd.style.right = (window.innerWidth - rect.right) + 'px'; dd.style.left = 'auto';
+  dd.classList.add('open'); buildFilterOptList();
+}
+function closeFilterDD() { _filterDDOpen = false; document.getElementById('filterDD').classList.remove('open'); }
+function pickFilter(key) {
+  if (_activeFilterKey === key) { _activeFilterKey = null; } else {
+    _activeFilterKey = key;
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchClearBtn').classList.add('hidden');
+  }
+  closeFilterDD(); updateFilterBtnState(); applyFilter();
+  if (_activePage === 'totalsearch') runTotalSearch();
+}
+function clearFilterDD() { _activeFilterKey = null; closeFilterDD(); updateFilterBtnState(); applyFilter(); }
+function getActiveFilterLabel() {
+  for (var i = 0; i < FILTER_OPTIONS.length; i++) { if (FILTER_OPTIONS[i].key === _activeFilterKey) return FILTER_OPTIONS[i].label; }
+  return '';
+}
+function updateFilterBtnState() {
+  var btn = document.getElementById('filterBtnIcon'), badge = document.getElementById('filterActiveBadge'), svg = document.getElementById('filterIconSvg'), hasFilter = !!_activeFilterKey;
+  btn.classList.toggle('active', hasFilter); svg.style.color = hasFilter ? 'white' : '';
+  if (hasFilter) { badge.textContent = 'Filter: ' + getActiveFilterLabel(); badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+}
+document.addEventListener('click', function(e) { if (_filterDDOpen && !e.target.closest('.filter-picker')) closeFilterDD(); });
+
+// ================================================================
+// ENTRY MATCH
+// ================================================================
+var COLOR_MODIFIERS = ['dark','ash','medium','light','natural','warm','cool','deep','soft'];
+function entryMatchesProduct(entryLabel, p) {
+  var el = entryLabel.toLowerCase().trim(), d = p.desc.toLowerCase(), k = p.kode.toLowerCase();
+  function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+  function wholeWord(haystack, needle) { return new RegExp('(?:^|[^a-z0-9])'+escRe(needle)+'(?:[^a-z0-9]|$)').test(haystack); }
+  var entryWords = el.split(/\s+/), isPlainColor = entryWords.length === 1 && COLOR_MODIFIERS.indexOf(entryWords[0]) < 0;
+  if (isPlainColor) { for (var mi = 0; mi < COLOR_MODIFIERS.length; mi++) { var pattern = COLOR_MODIFIERS[mi]+' '+el; if (d.indexOf(pattern) >= 0 || k.indexOf(pattern) >= 0) return false; } }
+  if (wholeWord(d, el) || wholeWord(k, el)) return true;
+  var stripped = el.replace(/^\d+\s+/,'').trim();
+  if (stripped && stripped !== el) {
+    var sWords = stripped.split(/\s+/), isPS = sWords.length === 1 && COLOR_MODIFIERS.indexOf(sWords[0]) < 0, rejS = false;
+    if (isPS) for (var mi2 = 0; mi2 < COLOR_MODIFIERS.length; mi2++) { var p2 = COLOR_MODIFIERS[mi2]+' '+stripped; if (d.indexOf(p2) >= 0 || k.indexOf(p2) >= 0) { rejS = true; break; } }
+    if (!rejS && (wholeWord(d, stripped) || wholeWord(k, stripped))) return true;
+  }
+  var numOnly = el.match(/^(\d+)$/);
+  if (numOnly && k.match(new RegExp('[\\-\\.x]0*'+numOnly[1]+'(?:\\D|$)'))) return true;
+  return false;
+}
+function catMatchesProduct(p, catKey) {
+  var kws = CAT_MAP[catKey]; if (!kws) return false;
+  var d = p.desc.toLowerCase(), k = p.kode.toLowerCase();
+  for (var i = 0; i < kws.length; i++) if (d.indexOf(kws[i]) >= 0 || k.indexOf(kws[i]) >= 0) return true;
+  return false;
+}
+
+// ================================================================
+// PRODUCTS
+// ================================================================
+var PRODUCTS = {
+  aeon:[
+    {no:1,kode:"12J.PCDBA.C0085701XX",desc:"IMPLORA DAYTODAY SERIES BROW POP ASH BROWN(36X12X0,08GR)"},
+    {no:2,kode:"12J.PCDBB.C0085701XX",desc:"IMPLORA DAYTODAY SERIES BROW POP DARK BROWN(36X12X0,08GR)"},
+    {no:3,kode:"12J.PCDBD.C0085701XX",desc:"IMPLORA DAYTODAY SERIES BROW POP DARK ASH(36X12X0,08GR)"},
+    {no:4,kode:"12J.PCDBM.C0085701XX",desc:"IMPLORA DAYTODAY SERIES BROW POP MEDIUM BROWN(36X12X0,08GR)"},
+    {no:5,kode:"12J.PCDBT.C0085701XX",desc:"IMPLORA DAYTODAY SERIES BROW POP TAUPE(36X12X0,08GR)"},
+    {no:6,kode:"12J.PCDKI.G001C101XX",desc:"IMPLORA DAYTODAY SERIES KEYCHAIN LIP BULLET 01 INTENTION (24X12X1,5GR)"},
+    {no:7,kode:"12J.PCDKH.G001C101XX",desc:"IMPLORA DAYTODAY SERIES KEYCHAIN LIP BULLET 02 HABITUAL (24X12X1,5GR)"},
+    {no:8,kode:"12J.PCDKE.G001C101XX",desc:"IMPLORA DAYTODAY SERIES KEYCHAIN LIP BULLET 03 EXTRAORDINARY (24X12X1,5GR)"},
+    {no:9,kode:"12J.PCDKA.G001C101XX",desc:"IMPLORA DAYTODAY SERIES KEYCHAIN LIP BULLET 04 ATTENTION (24X12X1,5GR)"},
+    {no:10,kode:"12J.PCDKN.G001C101XX",desc:"IMPLORA DAYTODAY SERIES KEYCHAIN LIP BULLET 05 AT NIGHT (24X12X1,5GR)"},
+    {no:11,kode:"12J.PCDLU.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 01 UPLIFTED (24X12X4GR)"},
+    {no:12,kode:"12J.PCDLC.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 02 CHERISH (24X12X4GR)"},
+    {no:13,kode:"12J.PCDLP.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 03 PASSIONATE (24X12X4GR)"},
+    {no:14,kode:"12J.PCDLH.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 04 HUMBLE (24X12X4GR)"},
+    {no:15,kode:"12J.PCDLA.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 05 AMBITION (24X12X4GR)"},
+    {no:16,kode:"12J.PCDLD.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 06 ATTITUDE (24X12X4GR)"},
+    {no:17,kode:"12J.PCDTP.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 01 PORCELAIN (12X12X10GR)"},
+    {no:18,kode:"12J.PCDTB.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 02 BUTTER (12X12X10GR)"},
+    {no:19,kode:"12J.PCDTC.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 03 CASHEW (12X12X10GR)"},
+    {no:20,kode:"12J.PCDTH.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 04 HONEY (12X12X10GR)"},
+    {no:21,kode:"12J.PCDTT.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 05 TOFFEE (12X12X10GR)"},
+    {no:22,kode:"12J.PCDTN.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 06 NUTMEG (12X12X10GR)"},
+    {no:23,kode:"12J.PCDRP.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 01 PORCELAIN (24X12X10GR)"},
+    {no:24,kode:"12J.PCDRB.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 02 BUTTER (24X12X10GR)"},
+    {no:25,kode:"12J.PCDRC.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 03 CASHEW (24X12X10GR)"},
+    {no:26,kode:"12J.PCDRH.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 04 HONEY (24X12X10GR)"},
+    {no:27,kode:"12J.PCDRT.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 05 TOFFEE (24X12X10GR)"},
+    {no:28,kode:"12J.PCDRN.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 06 NUTMEG (24X12X10GR)"},
+    {no:29,kode:"12J.PCHC1.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION IVORY 01 (8x12x13GR)"},
+    {no:30,kode:"12J.PCHC2.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION LIGHT BEIGE 02 (8x12x13GR)"},
+    {no:31,kode:"12J.PCHC3.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION LINEN 03 (8x12x13GR)"},
+    {no:32,kode:"12J.PCHC4.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION MEDIUM BEIGE 04 (8x12x13GR)"},
+    {no:33,kode:"12J.PCHC5.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION WARM BEIGE 05 (8x12x13GR)"},
+    {no:34,kode:"12J.PCHC6.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION DARK BEIGE 06 (8x12x13GR)"},
+    {no:35,kode:"12J.PCHR1.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL IVORY 01 (12x12x13GR)"},
+    {no:36,kode:"12J.PCHR2.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL LIGHT BEIGE 02 (12x12x13GR)"},
+    {no:37,kode:"12J.PCHR3.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL LINEN 03 (12x12x13GR)"},
+    {no:38,kode:"12J.PCHR4.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL MEDIUM BEIGE 04 (12x12x13GR)"},
+    {no:39,kode:"12J.PCHR5.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL WARM BEIGE 05 (12x12x13GR)"},
+    {no:40,kode:"12J.PCHR6.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL DARK BEIGE 06 (12x12x13GR)"},
+    {no:41,kode:"12J.PCLF1.G025F801XX",desc:"IMPLORA EVEN BETTER LIQUID FOUNDATION IVORY (01) (12x12x25GR)"},
+    {no:42,kode:"12J.PCLF2.G025F801XX",desc:"IMPLORA EVEN BETTER LIQUID FOUNDATION LIGHT BEIGE (02) (12x12x25GR)"},
+    {no:43,kode:"12J.PCLF3.G025F801XX",desc:"IMPLORA EVEN BETTER LIQUID FOUNDATION LINEN (03) (12x12x25GR)"},
+    {no:44,kode:"12J.PCLF4.G025F801XX",desc:"IMPLORA EVEN BETTER LIQUID FOUNDATION MEDIUM BEIGE (04) (12x12x25GR)"},
+    {no:45,kode:"12J.PCLF5.G025F801XX",desc:"IMPLORA EVEN BETTER LIQUID FOUNDATION WARM OLIVE (05) (12x12x25GR)"},
+    {no:46,kode:"12J.PCLF6.G025F801XX",desc:"IMPLORA EVEN BETTER LIQUID FOUNDATION DARK BEIGE (06) (12x12x25GR)"},
+    {no:47,kode:"12J.PCUE1.G0029001XX",desc:"IMPLORA URBAN EYEBROW PENCIL (01 NATURAL BLACK) (144x12x2.5GR)"},
+    {no:48,kode:"12J.PCUE2.G0029001XX",desc:"IMPLORA URBAN EYEBROW PENCIL (02 DARK BROWN) (144x12x2.5GR)"},
+    {no:49,kode:"12J.PCUE3.G0029001XX",desc:"IMPLORA URBAN EYEBROW PENCIL (03 MEDIUM BROWN) (144x12x2.5GR)"},
+    {no:50,kode:"12J.PCUEM.G006E701XX",desc:"IMPLORA URBAN EYESHADOW PALETTE (AFTERGLAM) (18x12x6x1,1GR)"},
+    {no:51,kode:"12J.PCUEW.G006E701XX",desc:"IMPLORA URBAN EYESHADOW PALETTE (AFTERGLOW) (18x12x6x1,1GR)"},
+    {no:52,kode:"12J.PCULE.C080E701XX",desc:"IMP URBAN LIQUID EYELINER (24x12x0,8GR)"},
+    {no:53,kode:"12J.PCUVM.G007E701XX",desc:"IMP URBAN VOLUME MASCARA (24x12x7,8GR)"},
+    {no:54,kode:"JDBE-1001",desc:"IMP CHEEK BLOSSOM BLUSH ON PINK CANDY"},
+    {no:55,kode:"JDBE-1002",desc:"IMP CHEEK BLOSSOM BLUSH ON CORAL PEACH"},
+    {no:56,kode:"JDBE-1003",desc:"IMP CHEEK BLOSSOM BLUSH ON DUSTY ROSE"},
+    {no:57,kode:"JDBE-1004",desc:"IMP CHEEK BLOSSOM BLUSH ON SWEET SALMON"},
+    {no:58,kode:"JDBE-2110",desc:"IMP LIQUID FOUNDATION IVORY (110)"},
+    {no:59,kode:"JDBE-2115",desc:"IMP LIQUID FOUNDATION LIGHT CREAM (115)"},
+    {no:60,kode:"JDBE-2210",desc:"IMP LIQUID FOUNDATION CLASSIC NUDE (210)"},
+    {no:61,kode:"JDBE-2240",desc:"IMP LIQUID FOUNDATION WARM BEIGE (240)"},
+    {no:62,kode:"JDBE-2320",desc:"IMP LIQUID FOUNDATION NATURAL (320)"},
+    {no:63,kode:"JDBE-2430",desc:"IMP LIQUID FOUNDATION TAN (430)"},
+    {no:64,kode:"JDESP-1001",desc:"IMP DAWN EYESHADOW PALETTE"},
+    {no:65,kode:"JDESP-1002",desc:"IMP DESERT EYESHADOW PALETTE"},
+    {no:66,kode:"JDESP-1003",desc:"IMP OCEAN EYESHADOW PALETTE"},
+    {no:67,kode:"JDESP-1004",desc:"IMP TWILIGHT EYESHADOW PALETTE"},
+    {no:68,kode:"JDEYE-1201",desc:"IMP EYE LINER PEN"},
+    {no:69,kode:"JDEYE-1301",desc:"IMP NEW MASCARA"},
+    {no:70,kode:"JDEYE-007",desc:"IMP EYE PENCIL DARK BROWN"},
+    {no:71,kode:"JDEYE-001",desc:"IMP EYE PENCIL BLACK"},
+    {no:72,kode:"JDEYE-002",desc:"IMP EYE PENCIL BROWN"},
+    {no:73,kode:"JDEYE-006",desc:"IMP EYE PENCIL GREY BROWN"},
+    {no:74,kode:"JDEYE-201",desc:"IMP SOFT EYEBROW PENCIL BLACK"},
+    {no:75,kode:"JDEYE-202",desc:"IMP SOFT EYEBROW PENCIL DARK BROWN"},
+    {no:76,kode:"JDEYE-203",desc:"IMP SOFT EYEBROW PENCIL BROWN"},
+    {no:77,kode:"JDEYE-204",desc:"IMP SOFT EYEBROW PENCIL LIGHT BROWN"},
+    {no:78,kode:"12J.PCWPB.G002C101XX",desc:"IMP WOW BROW POMADE BLACK (24x12x2.5GR)"},
+    {no:79,kode:"12J.PCWPD.G002C101XX",desc:"IMP WOW BROW POMADE DARK BROWN (24x12x2.5GR)"},
+    {no:80,kode:"12J.PCWPG.G002C101XX",desc:"IMP WOW BROW POMADE DARK GREY (24x12x2.5GR)"},
+    {no:81,kode:"12J.PCWPM.G002C101XX",desc:"IMP WOW BROW POMADE MEDIUM BROWN (24x12x2.5GR)"},
+    {no:82,kode:"JDHRC-1001",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR BLEACHING (01)"},
+    {no:83,kode:"JDHRC-1002",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR NATURAL BLACK (02)"},
+    {no:84,kode:"JDHRC-1003",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR DARK BROWN (03)"},
+    {no:85,kode:"JDHRC-1004",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR COFFEE (04)"},
+    {no:86,kode:"JDHRC-1005",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR BROWN (05)"},
+    {no:87,kode:"JDHRC-1006",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR BURGUNDY (06)"},
+    {no:88,kode:"JDHRC-1007",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR RED VELVET (07)"},
+    {no:89,kode:"JDHRC-1008",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR RED WINE (08)"},
+    {no:90,kode:"JDHRC-1009",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR DARK BLONDE (09)"},
+    {no:91,kode:"JDHRC-1011",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR ASH GREY (11)"},
+    {no:92,kode:"JDHRC-1012",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR LIGHT ASH BLONDE (12)"},
+    {no:93,kode:"JDHRC-2013",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR ROYAL BLUE (13)"},
+    {no:94,kode:"JDHRC-2014",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR TOSCA (14)"},
+    {no:95,kode:"JDHRC-2015",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR ROSE GOLD (15)"},
+    {no:96,kode:"JDHRC-2016",desc:"IMP COLOR EXPERT PERMANENT HAIR COLOR VIOLET (16)"},
+    {no:97,kode:"JDHSC-1001",desc:"IMP HAIR COLOR SHAMPOO BLACK"},
+    {no:98,kode:"JDHSC-1002",desc:"IMP HAIR COLOR SHAMPOO BROWN"},
+    {no:99,kode:"JDHSC-1003",desc:"IMP HAIR COLOR SHAMPOO DARK BROWN"},
+    {no:100,kode:"12J.PCCMS.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (101 SALTED CARAMEL) (6X12X2.9 GR)"},
+    {no:101,kode:"12J.PCCMV.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (102 VANILLA LATTE) (6X12X2.9 GR)"},
+    {no:102,kode:"12J.PCCMH.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (103 HAZELNUT CREAM) (6X12X2.9 GR)"},
+    {no:103,kode:"12J.PCCMC.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (104 CAPPUCCINO) (6X12X2.9 GR)"},
+    {no:104,kode:"12J.PCCMR.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (201 ROSE LATTE) (6X12X2.9 GR)"},
+    {no:105,kode:"12J.PCCMA.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (301 AMERICANO) (6X12X2.9 GR)"},
+    {no:106,kode:"JDLIP-2301",desc:"IMP LIP CREAM MATTE DUSKY NUDE"},
+    {no:107,kode:"JDLIP-2302",desc:"IMP LIP CREAM MATTE TERRA COTTA"},
+    {no:108,kode:"JDLIP-2303",desc:"IMP LIP CREAM MATTE DARK BERRY"},
+    {no:109,kode:"JDLIP-2304",desc:"IMP LIP CREAM MATTE MEDELINE"},
+    {no:110,kode:"JDLIP-2305",desc:"IMP LIP CREAM MATTE ALLURE"},
+    {no:111,kode:"JDLIP-2306",desc:"IMP LIP CREAM MATTE LUMIERE"},
+    {no:112,kode:"JDLIP-2307",desc:"IMP LIP CREAM MATTE TRUFFLE MAUVE"},
+    {no:113,kode:"JDLIP-2308",desc:"IMP LIP CREAM MATTE PINK LATTE"},
+    {no:114,kode:"JDLIP-2309",desc:"IMP LIP CREAM MATTE BUTTERSCOTCH"},
+    {no:115,kode:"JDLIP-2310",desc:"IMP LIP CREAM MATTE GINGERBREAD"},
+    {no:116,kode:"JDLIP-2311",desc:"IMP LIP CREAM MATTE RED BEAN"},
+    {no:117,kode:"JDLIP-2312",desc:"IMP LIP CREAM MATTE BROWN SUGAR"},
+    {no:118,kode:"JDLIP-2313",desc:"IMP LIP CREAM MATTE HAZELNUDE"},
+    {no:119,kode:"JDLIP-2314",desc:"IMP LIP CREAM MATTE BABY ROSE"},
+    {no:120,kode:"JDLIP-2315",desc:"IMP LIP CREAM MATTE SALMON PINK"},
+    {no:121,kode:"JDLIP-2316",desc:"IMP LIP CREAM MATTE DUSTY PEACH"},
+    {no:122,kode:"JDLIP-2317",desc:"IMP LIP CREAM MATTE REDWOOD"},
+    {no:123,kode:"JDLIP-2318",desc:"IMP LIP CREAM MATTE RUBY"},
+    {no:124,kode:"JDLIP-2319",desc:"IMP LIP CREAM MATTE CAROLINA"},
+    {no:125,kode:"JDLIP-2320",desc:"IMP LIP CREAM MATTE RED GALA"},
+    {no:126,kode:"JDLIP-2321",desc:"IMPLORA X RELAXA MATTE LIPCREAM BARLEY & GRAPE"},
+    {no:127,kode:"12J.PCLCC.G003K201XX",desc:"IMP LIPMATTE INTENSE 01 CHERRY CRUSH (2401) (6X12X3.5 GR)"},
+    {no:128,kode:"12J.PCLMM.G003K201XX",desc:"IMP LIPMATTE INTENSE 02 MAPLE MOCHA (2402) (6X12X3.5 GR)"},
+    {no:129,kode:"12J.PCLSP.G003K201XX",desc:"IMP LIPMATTE INTENSE 03 SHEER PLUM (2403) (6X12X3.5 GR)"},
+    {no:130,kode:"JDLIP-2404",desc:"IMP LIPSTICK INT MATTE DIRTY PEACH"},
+    {no:131,kode:"12J.PCLBA.G003K201XX",desc:"IMP LIPMATTE INTENSE 05 BERRY ALLURE (2405) (6X12X3.5 GR)"},
+    {no:132,kode:"JDLIP-2406",desc:"IMP LIPSTICK INT MATTE TANGERINE CRUSH"},
+    {no:133,kode:"12J.PCCLJ.G0055701XX",desc:"IMPLORA CHEEK & LIPTINT JUICY JUICE (36X12X5,5GR)"},
+    {no:134,kode:"12J.PCCLR.G0055701XX",desc:"IMPLORA CHEEK & LIPTINT RED VELVET (36X12X5,5GR)"},
+    {no:135,kode:"12J.PCCLW.G0055701XX",desc:"IMPLORA CHEEK & LIPTINT WAFFLE CRUMBLE (36X12X5,5GR)"},
+    {no:136,kode:"JDLIP-2501",desc:"IMP CHEEK & LIPTINT VAMPIRE BLOOD"},
+    {no:137,kode:"JDLIP-2502",desc:"IMP CHEEK & LIPTINT CHERRY BOMB"},
+    {no:138,kode:"JDLIP-2503",desc:"IMP CHEEK & LIPTINT CANDY APPLE"},
+    {no:139,kode:"JDLIP-2504",desc:"IMP CHEEK & LIPTINT RED WINE"},
+    {no:140,kode:"JDLIP-2505",desc:"IMP CHEEK & LIPTINT CRANBERRY"},
+    {no:141,kode:"JDLIP-2506",desc:"IMP CHEEK & LIPTINT PUMPKIN"},
+    {no:142,kode:"JDLIP-2601",desc:"IMP LIP CRAYON SATIN CURIOUS"},
+    {no:143,kode:"JDLIP-2602",desc:"IMP LIP CRAYON SATIN FIRST KISS"},
+    {no:144,kode:"JDLIP-2603",desc:"IMP LIP CRAYON SATIN JEALOUSY"},
+    {no:145,kode:"JDLIP-2604",desc:"IMP LIP CRAYON SATIN MISERY"},
+    {no:146,kode:"JDLIP-2605",desc:"IMP LIP CRAYON SATIN PLAY DATE"},
+    {no:147,kode:"JDLIP-2606",desc:"IMP LIP CRAYON SATIN PROMISES"},
+    {no:148,kode:"JDLIP-2701",desc:"IMP LIP VELVET FEARLESS"},
+    {no:149,kode:"JDLIP-2702",desc:"IMP LIP VELVET HONEST"},
+    {no:150,kode:"JDLIP-2703",desc:"IMP LIP VELVET ATTRACTIVE"},
+    {no:151,kode:"JDLIP-2704",desc:"IMP LIP VELVET NAIVE"},
+    {no:152,kode:"JDLIP-2705",desc:"IMP LIP VELVET EXTROVERT"},
+    {no:153,kode:"JDLIP-2706",desc:"IMP LIP VELVET SERENITY"},
+    {no:154,kode:"JDLIP-2801",desc:"IMPLORA JELLY TINT MARIPOSA"},
+    {no:155,kode:"12J.PCJTS.M005K201XX",desc:"IMP JELLY TINT SAVY RED (2802)(6X12X5ML)"},
+    {no:156,kode:"12J.PCJTT.M005K201XX",desc:"IMP JELLY TINT TRUE VINTAGE (2803)(6X12X5ML)"},
+    {no:157,kode:"JDLIP-2804",desc:"IMPLORA JELLY TINT ROSY POSY"},
+    {no:158,kode:"12J.PCJTD.M005K201XX",desc:"IMP JELLY TINT DREAM PEACH (2805)(6X12X5ML)"},
+    {no:159,kode:"JDLIP-2806",desc:"IMPLORA JELLY TINT FLAMINGO"},
+    {no:160,kode:"JDLIP-2807",desc:"IMPLORA JELLY TINT SANGRIA"},
+    {no:161,kode:"JDLIP-2808",desc:"IMPLORA JELLY TINT BURNT ORANGE"},
+    {no:162,kode:"12J.PCJTW.M005K201XX",desc:"IMP JELLY TINT ROSEWOOD (2809)(6X12X5ML)"},
+    {no:163,kode:"JDLMS-1001",desc:"IMP LIP MOIST SERUM"},
+    {no:164,kode:"JDLMS-1002",desc:"IMP LIP MOIST ESSENCE"},
+    {no:165,kode:"12J.PCNPI.M008A401XX",desc:"IMPLORA PAINT IT RED NAIL POLISH (72x6x8ML)"},
+    {no:166,kode:"12J.PCNPM.M008A401XX",desc:"IMPLORA PAINT ME PRETTY NAIL POLISH (72x6x8ML)"},
+    {no:167,kode:"12J.PCNPU.M008A401XX",desc:"IMPLORA PAINT IT NUDE NAIL POLISH (72X6X8ML)"},
+    {no:168,kode:"JDNPL-1301",desc:"IMP NAIL POLISH RED"},
+    {no:169,kode:"JDNPL-1401",desc:"IMP NAIL POLISH WONDER"},
+    {no:170,kode:"12J.PCSMA.G025H301XX",desc:"IMP ESSENTIAL SHEET MASK (ACNE CONTROL) (48X12X25GR)"},
+    {no:171,kode:"12J.PCSMB.G025H301XX",desc:"IMPLORA ESSENTIAL SHEET MASK (BRIGHTENING) (48x12x25GR)"},
+    {no:172,kode:"12J.PCSMG.G025H301XX",desc:"IMP ESSENTIAL SHEET MASK (ANTI-AGING) (48X12X25GR)"},
+    {no:173,kode:"12J.PCSMM.G025H301XX",desc:"IMP ESSENTIAL SHEET MASK (MOISTURIZING) (48X12X25GR)"},
+    {no:174,kode:"12J.PCSMP.G025H301XX",desc:"IMP ESSENTIAL SHEET MASK (PORE CARE) (48X12X25GR)"},
+    {no:175,kode:"12J.PCHDP.G050F801XX",desc:"IMP HOW DOES IT PEEL PEELING GEL (12X12X50GR)"},
+    {no:176,kode:"12J.PCHDP.G100H501XX",desc:"IMPLORA HOW DOES IT PEEL PEELING GEL (12x4x100GR)"},
+    {no:177,kode:"JDCMS-1001",desc:"IMPLORA 8+ CERAMIDE SKIN BARRIER MOISTURIZING GEL"},
+    {no:178,kode:"JDCMS-2001",desc:"IMPLORA 8+ CERAMIDE SKIN BARRIER MOISTURIZING GEL REFILL"},
+    {no:179,kode:"12J.PCMRC.M030I901XX",desc:"IMPLORA CERAMIDE SKIN BARRIER RICH MOISTURIZING GEL (8x12x30ML)"},
+    {no:180,kode:"JDACS-1001",desc:"IMP ACNE SPOT"},
+    {no:181,kode:"JDDKS-1001",desc:"IMP DARK SPOT"},
+    {no:182,kode:"JDSER-1011",desc:"IMP LUMINOUS BRIGHTENING SERUM"},
+    {no:183,kode:"JDSER-1021",desc:"IMP MIDNIGHT SERUM"},
+    {no:184,kode:"JDSER-1031",desc:"IMP ACNE SERUM"},
+    {no:185,kode:"JDSER-1041",desc:"IMP PEELING SERUM"},
+    {no:186,kode:"JDSER-1051",desc:"IMP HYDRATING SERUM"},
+    {no:187,kode:"JDSER-1061",desc:"IMP 24K GOLD SERUM"},
+    {no:188,kode:"JDSER-1071",desc:"IMP 1% LIPORETINOL SERUM"},
+    {no:189,kode:"JDSER-1081",desc:"IMP BAKUCHIOL SERUM"},
+    {no:190,kode:"JDSER-1091",desc:"IMP BIRDNEST SKIN NOURISH SERUM"},
+    {no:191,kode:"JDSER-1101",desc:"IMP SALMON DNA SERUM"},
+    {no:192,kode:"JDSER-2001",desc:"IMPLORA WHITENING MILKY SERUM AMPOULE"},
+    {no:193,kode:"JDSER-3001",desc:"IMP CRYSTALICE EYE SERUM"},
+    {no:194,kode:"12J.PCSP4.M060J801XX",desc:"IMPLORA PERFECT SHIELD SUNSCREEN SPF 40 PA ++++ (48x50+10ML)"},
+    {no:195,kode:"12J.PCSPF.M050E101XX",desc:"IMPLORA PERFECT SHIELD GEL SUNSCREEN SPF 30 PA +++ (6x12x50ML)"},
+    {no:196,kode:"12J.PCSP4.M025J801XX",desc:"IMPLORA PERFECT SHIELD SUNSCREEN SPF 40 PA ++++ (48x25ML)"},
+    {no:197,kode:"12J.PCSP5.M025J801XX",desc:"IMPLORA PERFECT SHIELD SUNSCREEN SPF 50 PA ++++ (48x25ML)"}
+  ],
+  watsons:[
+    {no:1,kode:"12J.PCDBA.C0085701XX",desc:"IMPLORA DAYTODAY SERIES BROW POP ASH BROWN(36X12X0,08GR)"},
+    {no:2,kode:"12J.PCDBB.C0085701XX",desc:"IMPLORA DAYTODAY SERIES BROW POP DARK BROWN(36X12X0,08GR)"},
+    {no:3,kode:"12J.PCDBD.C0085701XX",desc:"IMPLORA DAYTODAY SERIES BROW POP DARK ASH(36X12X0,08GR)"},
+    {no:4,kode:"12J.PCDBM.C0085701XX",desc:"IMPLORA DAYTODAY SERIES BROW POP MEDIUM BROWN(36X12X0,08GR)"},
+    {no:5,kode:"12J.PCDBT.C0085701XX",desc:"IMPLORA DAYTODAY SERIES BROW POP TAUPE(36X12X0,08GR)"},
+    {no:6,kode:"12J.PCDKI.G001C101XX",desc:"IMPLORA DAYTODAY SERIES KEYCHAIN LIP BULLET 01 INTENTION (24X12X1,5GR)"},
+    {no:7,kode:"12J.PCDKH.G001C101XX",desc:"IMPLORA DAYTODAY SERIES KEYCHAIN LIP BULLET 02 HABITUAL (24X12X1,5GR)"},
+    {no:8,kode:"12J.PCDKE.G001C101XX",desc:"IMPLORA DAYTODAY SERIES KEYCHAIN LIP BULLET 03 EXTRAORDINARY (24X12X1,5GR)"},
+    {no:9,kode:"12J.PCDKA.G001C101XX",desc:"IMPLORA DAYTODAY SERIES KEYCHAIN LIP BULLET 04 ATTENTION (24X12X1,5GR)"},
+    {no:10,kode:"12J.PCDKN.G001C101XX",desc:"IMPLORA DAYTODAY SERIES KEYCHAIN LIP BULLET 05 AT NIGHT (24X12X1,5GR)"},
+    {no:11,kode:"12J.PCDLU.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 01 UPLIFTED (24X12X4GR)"},
+    {no:12,kode:"12J.PCDLC.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 02 CHERISH (24X12X4GR)"},
+    {no:13,kode:"12J.PCDLP.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 03 PASSIONATE (24X12X4GR)"},
+    {no:14,kode:"12J.PCDLH.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 04 HUMBLE (24X12X4GR)"},
+    {no:15,kode:"12J.PCDLA.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 05 AMBITION (24X12X4GR)"},
+    {no:16,kode:"12J.PCDLD.G004C101XX",desc:"IMPLORA DAYTODAY SERIES LITE MATTE LIP CREAM 06 ATTITUDE (24X12X4GR)"},
+    {no:17,kode:"12J.PCDTP.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 01 PORCELAIN (12X12X10GR)"},
+    {no:18,kode:"12J.PCDTB.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 02 BUTTER (12X12X10GR)"},
+    {no:19,kode:"12J.PCDTC.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 03 CASHEW (12X12X10GR)"},
+    {no:20,kode:"12J.PCDTH.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 04 HONEY (12X12X10GR)"},
+    {no:21,kode:"12J.PCDTT.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 05 TOFFEE (12X12X10GR)"},
+    {no:22,kode:"12J.PCDTN.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE 06 NUTMEG (12X12X10GR)"},
+    {no:23,kode:"12J.PCDRP.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 01 PORCELAIN (24X12X10GR)"},
+    {no:24,kode:"12J.PCDRB.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 02 BUTTER (24X12X10GR)"},
+    {no:25,kode:"12J.PCDRC.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 03 CASHEW (24X12X10GR)"},
+    {no:26,kode:"12J.PCDRH.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 04 HONEY (24X12X10GR)"},
+    {no:27,kode:"12J.PCDRT.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 05 TOFFEE (24X12X10GR)"},
+    {no:28,kode:"12J.PCDRN.G010A601XX",desc:"IMPLORA DAYTODAY SERIES TWO WAY CAKE REFILL 06 NUTMEG (24X12X10GR)"},
+    {no:29,kode:"12J.PCHC1.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION IVORY 01 (8x12x13GR)"},
+    {no:30,kode:"12J.PCHC2.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION LIGHT BEIGE 02 (8x12x13GR)"},
+    {no:31,kode:"12J.PCHC3.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION LINEN 03 (8x12x13GR)"},
+    {no:32,kode:"12J.PCHC4.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION MEDIUM BEIGE 04 (8x12x13GR)"},
+    {no:33,kode:"12J.PCHC5.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION WARM BEIGE 05 (8x12x13GR)"},
+    {no:34,kode:"12J.PCHC6.G013H701XX",desc:"IMPLORA HEALTHY GLOW CUSHION DARK BEIGE 06 (8x12x13GR)"},
+    {no:35,kode:"12J.PCHR1.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL IVORY 01 (12x12x13GR)"},
+    {no:36,kode:"12J.PCHR2.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL LIGHT BEIGE 02 (12x12x13GR)"},
+    {no:37,kode:"12J.PCHR3.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL LINEN 03 (12x12x13GR)"},
+    {no:38,kode:"12J.PCHR4.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL MEDIUM BEIGE 04 (12x12x13GR)"},
+    {no:39,kode:"12J.PCHR5.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL WARM BEIGE 05 (12x12x13GR)"},
+    {no:40,kode:"12J.PCHR6.G013A601XX",desc:"IMPLORA HEALTHY GLOW CUSHION REFILL DARK BEIGE 06 (12x12x13GR)"},
+    {no:41,kode:"12J.PCUE1.G0029001XX",desc:"IMPLORA URBAN EYEBROW PENCIL (01 NATURAL BLACK) (144x12x2.5GR)"},
+    {no:42,kode:"12J.PCUE2.G0029001XX",desc:"IMPLORA URBAN EYEBROW PENCIL (02 DARK BROWN) (144x12x2.5GR)"},
+    {no:43,kode:"12J.PCUE3.G0029001XX",desc:"IMPLORA URBAN EYEBROW PENCIL (03 MEDIUM BROWN) (144x12x2.5GR)"},
+    {no:44,kode:"12J.PCUEM.G006E701XX",desc:"IMPLORA URBAN EYESHADOW PALETTE (AFTERGLAM) (18x12x6x1,1GR)"},
+    {no:45,kode:"12J.PCUEW.G006E701XX",desc:"IMPLORA URBAN EYESHADOW PALETTE (AFTERGLOW) (18x12x6x1,1GR)"},
+    {no:46,kode:"12J.PCULE.C080E701XX",desc:"IMP URBAN LIQUID EYELINER (24x12x0,8GR)"},
+    {no:47,kode:"12J.PCUVM.G007E701XX",desc:"IMP URBAN VOLUME MASCARA (24x12x7,8GR)"},
+    {no:48,kode:"JDBE-1001",desc:"IMP CHEEK BLOSSOM BLUSH ON PINK CANDY"},
+    {no:49,kode:"JDBE-1002",desc:"IMP CHEEK BLOSSOM BLUSH ON CORAL PEACH"},
+    {no:50,kode:"JDBE-1003",desc:"IMP CHEEK BLOSSOM BLUSH ON DUSTY ROSE"},
+    {no:51,kode:"JDBE-1004",desc:"IMP CHEEK BLOSSOM BLUSH ON SWEET SALMON"},
+    {no:52,kode:"JDESP-1001",desc:"IMP DAWN EYESHADOW PALETTE"},
+    {no:53,kode:"JDESP-1002",desc:"IMP DESERT EYESHADOW PALETTE"},
+    {no:54,kode:"JDESP-1003",desc:"IMP OCEAN EYESHADOW PALETTE"},
+    {no:55,kode:"JDESP-1004",desc:"IMP TWILIGHT EYESHADOW PALETTE"},
+    {no:56,kode:"JDEYE-1201",desc:"IMP EYE LINER PEN"},
+    {no:57,kode:"JDEYE-1301",desc:"IMP NEW MASCARA"},
+    {no:58,kode:"JDEYE-007",desc:"IMP EYE PENCIL DARK BROWN"},
+    {no:59,kode:"JDEYE-001",desc:"IMP EYE PENCIL BLACK"},
+    {no:60,kode:"JDEYE-002",desc:"IMP EYE PENCIL BROWN"},
+    {no:61,kode:"JDEYE-006",desc:"IMP EYE PENCIL GREY BROWN"},
+    {no:62,kode:"12J.PCWPB.G002C101XX",desc:"IMP WOW BROW POMADE BLACK (24x12x2.5GR)"},
+    {no:63,kode:"12J.PCWPD.G002C101XX",desc:"IMP WOW BROW POMADE DARK BROWN (24x12x2.5GR)"},
+    {no:64,kode:"12J.PCWPG.G002C101XX",desc:"IMP WOW BROW POMADE DARK GREY (24x12x2.5GR)"},
+    {no:65,kode:"12J.PCWPM.G002C101XX",desc:"IMP WOW BROW POMADE MEDIUM BROWN (24x12x2.5GR)"},
+    {no:66,kode:"12J.PCCMS.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (101 SALTED CARAMEL) (6X12X2.9 GR)"},
+    {no:67,kode:"12J.PCCMV.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (102 VANILLA LATTE) (6X12X2.9 GR)"},
+    {no:68,kode:"12J.PCCMH.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (103 HAZELNUT CREAM) (6X12X2.9 GR)"},
+    {no:69,kode:"12J.PCCMC.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (104 CAPPUCCINO) (6X12X2.9 GR)"},
+    {no:70,kode:"12J.PCCMR.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (201 ROSE LATTE) (6X12X2.9 GR)"},
+    {no:71,kode:"12J.PCCMA.G002K201XX",desc:"IMP CAFFE MATTE LIPCREAM (301 AMERICANO) (6X12X2.9 GR)"},
+    {no:72,kode:"JDLIP-2301",desc:"IMP LIP CREAM MATTE DUSKY NUDE"},
+    {no:73,kode:"JDLIP-2302",desc:"IMP LIP CREAM MATTE TERRA COTTA"},
+    {no:74,kode:"JDLIP-2303",desc:"IMP LIP CREAM MATTE DARK BERRY"},
+    {no:75,kode:"JDLIP-2304",desc:"IMP LIP CREAM MATTE MEDELINE"},
+    {no:76,kode:"JDLIP-2305",desc:"IMP LIP CREAM MATTE ALLURE"},
+    {no:77,kode:"JDLIP-2306",desc:"IMP LIP CREAM MATTE LUMIERE"},
+    {no:78,kode:"JDLIP-2307",desc:"IMP LIP CREAM MATTE TRUFFLE MAUVE"},
+    {no:79,kode:"JDLIP-2308",desc:"IMP LIP CREAM MATTE PINK LATTE"},
+    {no:80,kode:"JDLIP-2309",desc:"IMP LIP CREAM MATTE BUTTERSCOTCH"},
+    {no:81,kode:"JDLIP-2310",desc:"IMP LIP CREAM MATTE GINGERBREAD"},
+    {no:82,kode:"JDLIP-2311",desc:"IMP LIP CREAM MATTE RED BEAN"},
+    {no:83,kode:"JDLIP-2312",desc:"IMP LIP CREAM MATTE BROWN SUGAR"},
+    {no:84,kode:"JDLIP-2313",desc:"IMP LIP CREAM MATTE HAZELNUDE"},
+    {no:85,kode:"JDLIP-2314",desc:"IMP LIP CREAM MATTE BABY ROSE"},
+    {no:86,kode:"JDLIP-2315",desc:"IMP LIP CREAM MATTE SALMON PINK"},
+    {no:87,kode:"JDLIP-2316",desc:"IMP LIP CREAM MATTE DUSTY PEACH"},
+    {no:88,kode:"JDLIP-2317",desc:"IMP LIP CREAM MATTE REDWOOD"},
+    {no:89,kode:"JDLIP-2318",desc:"IMP LIP CREAM MATTE RUBY"},
+    {no:90,kode:"JDLIP-2319",desc:"IMP LIP CREAM MATTE CAROLINA"},
+    {no:91,kode:"JDLIP-2320",desc:"IMP LIP CREAM MATTE RED GALA"},
+    {no:92,kode:"12J.PCLCC.G003K201XX",desc:"IMP LIPMATTE INTENSE 01 CHERRY CRUSH (2401) (6X12X3.5 GR)"},
+    {no:93,kode:"12J.PCLMM.G003K201XX",desc:"IMP LIPMATTE INTENSE 02 MAPLE MOCHA (2402) (6X12X3.5 GR)"},
+    {no:94,kode:"12J.PCLSP.G003K201XX",desc:"IMP LIPMATTE INTENSE 03 SHEER PLUM (2403) (6X12X3.5 GR)"},
+    {no:95,kode:"JDLIP-2404",desc:"IMP LIPSTICK INT MATTE DIRTY PEACH"},
+    {no:96,kode:"12J.PCLBA.G003K201XX",desc:"IMP LIPMATTE INTENSE 05 BERRY ALLURE (2405) (6X12X3.5 GR)"},
+    {no:97,kode:"JDLIP-2406",desc:"IMP LIPSTICK INT MATTE TANGERINE CRUSH"},
+    {no:98,kode:"JDLIP-2501",desc:"IMP CHEEK & LIPTINT VAMPIRE BLOOD"},
+    {no:99,kode:"JDLIP-2502",desc:"IMP CHEEK & LIPTINT CHERRY BOMB"},
+    {no:100,kode:"JDLIP-2503",desc:"IMP CHEEK & LIPTINT CANDY APPLE"},
+    {no:101,kode:"JDLIP-2504",desc:"IMP CHEEK & LIPTINT RED WINE"},
+    {no:102,kode:"JDLIP-2505",desc:"IMP CHEEK & LIPTINT CRANBERRY"},
+    {no:103,kode:"JDLIP-2506",desc:"IMP CHEEK & LIPTINT PUMPKIN"},
+    {no:104,kode:"JDLIP-2601",desc:"IMP LIP CRAYON SATIN CURIOUS"},
+    {no:105,kode:"JDLIP-2602",desc:"IMP LIP CRAYON SATIN FIRST KISS"},
+    {no:106,kode:"JDLIP-2603",desc:"IMP LIP CRAYON SATIN JEALOUSY"},
+    {no:107,kode:"JDLIP-2604",desc:"IMP LIP CRAYON SATIN MISERY"},
+    {no:108,kode:"JDLIP-2605",desc:"IMP LIP CRAYON SATIN PLAY DATE"},
+    {no:109,kode:"JDLIP-2606",desc:"IMP LIP CRAYON SATIN PROMISES"},
+    {no:110,kode:"JDLIP-2701",desc:"IMP LIP VELVET FEARLESS"},
+    {no:111,kode:"JDLIP-2702",desc:"IMP LIP VELVET HONEST"},
+    {no:112,kode:"JDLIP-2703",desc:"IMP LIP VELVET ATTRACTIVE"},
+    {no:113,kode:"JDLIP-2704",desc:"IMP LIP VELVET NAIVE"},
+    {no:114,kode:"JDLIP-2705",desc:"IMP LIP VELVET EXTROVERT"},
+    {no:115,kode:"JDLIP-2706",desc:"IMP LIP VELVET SERENITY"},
+    {no:116,kode:"JDLIP-2801",desc:"IMPLORA JELLY TINT MARIPOSA"},
+    {no:117,kode:"12J.PCJTS.M005K201XX",desc:"IMP JELLY TINT SAVY RED (2802)(6X12X5ML)"},
+    {no:118,kode:"12J.PCJTT.M005K201XX",desc:"IMP JELLY TINT TRUE VINTAGE (2803)(6X12X5ML)"},
+    {no:119,kode:"JDLIP-2804",desc:"IMPLORA JELLY TINT ROSY POSY"},
+    {no:120,kode:"12J.PCJTD.M005K201XX",desc:"IMP JELLY TINT DREAM PEACH (2805)(6X12X5ML)"},
+    {no:121,kode:"JDLIP-2806",desc:"IMPLORA JELLY TINT FLAMINGO"},
+    {no:122,kode:"JDLIP-2807",desc:"IMPLORA JELLY TINT SANGRIA"},
+    {no:123,kode:"JDLIP-2808",desc:"IMPLORA JELLY TINT BURNT ORANGE"},
+    {no:124,kode:"12J.PCJTW.M005K201XX",desc:"IMP JELLY TINT ROSEWOOD (2809)(6X12X5ML)"},
+    {no:125,kode:"JDLMS-1001",desc:"IMP LIP MOIST SERUM"},
+    {no:126,kode:"JDLMS-1002",desc:"IMP LIP MOIST ESSENCE"},
+    {no:127,kode:"JDCMS-1001",desc:"IMPLORA 8+ CERAMIDE SKIN BARRIER MOISTURIZING GEL"},
+    {no:128,kode:"JDCMS-2001",desc:"IMPLORA 8+ CERAMIDE SKIN BARRIER MOISTURIZING GEL REFILL"},
+    {no:129,kode:"12J.PCMRC.M030I901XX",desc:"IMPLORA CERAMIDE SKIN BARRIER RICH MOISTURIZING GEL (8x12x30ML)"},
+    {no:130,kode:"JDACS-1001",desc:"IMP ACNE SPOT"},
+    {no:131,kode:"JDDKS-1001",desc:"IMP DARK SPOT"},
+    {no:132,kode:"JDSER-1011",desc:"IMP LUMINOUS BRIGHTENING SERUM"},
+    {no:133,kode:"JDSER-1021",desc:"IMP MIDNIGHT SERUM"},
+    {no:134,kode:"JDSER-1031",desc:"IMP ACNE SERUM"},
+    {no:135,kode:"JDSER-1041",desc:"IMP PEELING SERUM"},
+    {no:136,kode:"JDSER-1051",desc:"IMP HYDRATING SERUM"},
+    {no:137,kode:"JDSER-1061",desc:"IMP 24K GOLD SERUM"},
+    {no:138,kode:"JDSER-1071",desc:"IMP 1% LIPORETINOL SERUM"},
+    {no:139,kode:"JDSER-1081",desc:"IMP BAKUCHIOL SERUM"},
+    {no:140,kode:"JDSER-1091",desc:"IMP BIRDNEST SKIN NOURISH SERUM"},
+    {no:141,kode:"JDSER-1101",desc:"IMP SALMON DNA SERUM"},
+    {no:142,kode:"JDSER-3001",desc:"IMP CRYSTALICE EYE SERUM"},
+    {no:143,kode:"12J.PCSP4.M060J801XX",desc:"IMPLORA PERFECT SHIELD SUNSCREEN SPF 40 PA ++++ (48x50+10ML)"},
+    {no:144,kode:"12J.PCSPF.M050E101XX",desc:"IMPLORA PERFECT SHIELD GEL SUNSCREEN SPF 30 PA +++ (6x12x50ML)"},
+    {no:145,kode:"12J.PCSP4.M025J801XX",desc:"IMPLORA PERFECT SHIELD SUNSCREEN SPF 40 PA ++++ (48x25ML)"},
+    {no:146,kode:"12J.PCSP5.M025J801XX",desc:"IMPLORA PERFECT SHIELD SUNSCREEN SPF 50 PA ++++ (48x25ML)"}
+  ]
+};
+
+// ================================================================
+// WA TEMPLATES
+// ================================================================
+var WA_STORAGE_KEY='implora_wa_templates_v3';
+var WA_DEFAULT_AEON=[
+  '* Pengecekan stock dan OOS','* Update price card','* Cleaning tester','* Merapikan dan menata produk di toko',
+  '* Promo update 27 April 2026 - 24 Mei 2026',
+  '* Hair Color all shade *Rp.~14.100~ -> Rp.12.000*','* Urban Lip Cream all shade *Rp.~26.600~ -> Rp.22.700*',
+  '* Jelly Tint all shade *Rp.~26.100~ -> Rp.19.600*','* Cushion reguler all shade *Rp.~96.400~ -> Rp.67.500*',
+  '* DTD Lip Cream all shade *Rp.~25.000~ -> Rp.17.500*','* Day2day TWC Reg all shade *Rp.~52.900~ -> Rp.37.100*',
+  '* Day2day TWC Refill all shade *Rp.~35.000~ -> Rp.24.500*','* Cushion Refill all shade *Rp.~55.400~ -> Rp.38.800*',
+  '* Lip Crayon all shade *Rp.~24.300~ -> Rp.17.100*','* Day2day Brow Pop all shade *Rp.~19.500~ -> Rp.13.700*',
+  '* Day2day Lip Bullet all shade *Rp.~25.100~ -> Rp.17.600*','* Eyebrow all shade *Rp.~6.700~ -> Rp.5.700*',
+  '* Eyeshadow all shade *Rp.~53.700~ -> Rp.43.000*','* Hair Color Shampoo all shade *Rp.~9.700~ -> Rp.8.300*',
+  '* Urban Eyeshadow all shade *Rp.~47.100~ -> Rp.37.700*','* Urban Eyeliner *Rp.~31.000~ -> Rp.24.800*',
+  '* Moisturizer (Jar) *Rp.~29.400~ -> Rp.23.600*','* Urban Mascara *Rp.~36.000~ -> Rp.27.000*',
+  '* Nail Polish Colour + Red *Rp.~36.400~ -> Rp.31.000*','* Nail Polish Wonder *Rp.~36.400~ -> Rp.25.500*',
+  '* Nail Polish Paint It Red + Nude *Rp.~57.800~ -> Rp.49.200*','* Nail Polish Paint Me Pretty *Rp.~57.800~ -> Rp.40.500*',
+  '* Sunscreen Perfect Shield SPF40 50ml *Rp.~42.700~ -> Rp.36.300*',
+  '* Sunscreen Perfect Shield SPF40 PA 25ml *Rp.~23.600~ -> Rp.20.100*',
+  '* Sunscreen Perfect Shield SPF50 PA 25ml *Rp.~33.200~ -> Rp.28.300*'
+].join('\n');
+var WA_DEFAULT_WATSONS=[
+  '* Pengecekan stock dan oos','* update price card','* cleanning tester','* Merapikan dan menata produk di toko',
+  '* Promo Watsons berjalan *11 Mei 2026 - 7 Juni 2026*',
+  '* Eye Pencil all shade *Less 30% + Member 5%*',
+  '* Lip Cream Matte all shade *Less 30% + Member 5%*',
+  '* DTD Lite Lip Cream all shade *Less 50% + Member 2x Point*',
+  '* DTD Brow Pop all shade *Less 50% + Member 2x Point*',
+  '* Cheek Blush On all shade *Less 30% + Member 5%*',
+  '* DTD Key Lip Bullet all shade *Less 50% + Member 2x Point*',
+  '* Caffe Matte Lip Cream all shade *Less 30% + Member 5%*',
+  '* DTD Two Way Cake all shade *Less 50% + Member 2x Point*',
+  '* DTD Two Way Cake Refill all shade *Less 50% + Member 2x Point*',
+  '* Serum all varian *Less 50% + Member 2x Point*',
+  '* H/Glow Cushion all shade *Less 50% + Member 2x Point*',
+  '* H/Glow Cushion Refill all shade *Less 50% + Member 2x Point*',
+  '* Urban Eye Shadow Palette *Less 40% + Member 5%*',
+  '* Urban Volume Mascara *Less 40% + Member 2x Point*',
+  '* Urban Liquid Eyeliner *Less 40% + Member 2x Point*',
+  '* Perfect Shield Sunscreen SPF40 PA++++ 25ML *Less 30% + Member 2x Point*',
+  '* Brightening Sunscreen SPF50 PA++++ 25ML *Less 30% + Member 2x Point*'
+].join('\n');
+// ================================================================
+// WA TEMPLATES — Cloudflare D1 via Worker API
+// Ganti URL di bawah dengan URL Worker Anda setelah deploy
+// ================================================================
+var WA_WORKER_URL = 'https://implora-wa-templates.masbejoroleplay.workers.dev';
+
+// Cache in-memory supaya tidak fetch ulang setiap kali openWAReport
+var _waTemplateCache = null;
+
+// Sync: baca dari cache lokal (localStorage sebagai fallback sementara)
+function loadWATemplates() {
+  if (_waTemplateCache) return _waTemplateCache;
+  // Fallback ke localStorage jika cache belum ada (sebelum fetch async selesai)
+  try { var s = localStorage.getItem(WA_STORAGE_KEY); if (s) { _waTemplateCache = JSON.parse(s); return _waTemplateCache; } } catch(e) {}
+  return { aeon_kunjungan: WA_DEFAULT_AEON, watsons_kunjungan: WA_DEFAULT_WATSONS };
+}
+
+// Async: fetch template dari D1, update cache dan localStorage, lalu re-render WA page jika sedang buka
+function fetchWATemplateFromDB(store) {
+  fetch(WA_WORKER_URL + '/api/template?store=' + store)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (!data.text) return; // belum ada di DB, tetap pakai default
+      if (!_waTemplateCache) _waTemplateCache = loadWATemplates();
+      var key = store === 'AEON' ? 'aeon_kunjungan' : 'watsons_kunjungan';
+      _waTemplateCache[key] = data.text;
+      // Sync ke localStorage sebagai fallback offline
+      try { localStorage.setItem(WA_STORAGE_KEY, JSON.stringify(_waTemplateCache)); } catch(e) {}
+      // Jika WA page sedang terbuka, update tampilan langsung
+      if (_activePage === 'wa') {
+        var dispEl = document.getElementById('waKunjunganDisplay');
+        var taEl   = document.getElementById('waKunjungan');
+        if (dispEl) dispEl.innerHTML = formatWAText(data.text);
+        if (taEl)   taEl.value = data.text;
+      }
+    })
+    .catch(function(){/* offline atau worker belum deploy — tetap pakai cache/default */});
+}
+
+// Simpan ke D1 (async, fire-and-forget) + update cache + localStorage
+function saveWATemplates(t) {
+  _waTemplateCache = t;
+  try { localStorage.setItem(WA_STORAGE_KEY, JSON.stringify(t)); } catch(e) {}
+  // Tentukan store dari key yang berubah
+  var stores = [];
+  if (t.aeon_kunjungan !== undefined)    stores.push('AEON');
+  if (t.watsons_kunjungan !== undefined) stores.push('WATSONS');
+  stores.forEach(function(store) {
+    var key  = store === 'AEON' ? 'aeon_kunjungan' : 'watsons_kunjungan';
+    var text = t[key] || '';
+    fetch(WA_WORKER_URL + '/api/template', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ store: store, key: key, text: text })
+    }).catch(function(){/* offline — data sudah disimpan di localStorage */});
+  });
+}
+
+// ================================================================
+// HTML HELPERS
+// ================================================================
+function escHTML(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(str){return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
+function formatWAText(raw){
+  return raw.split('\n').map(function(line){
+    var f=line.replace(/^\* /,'\u2013 ');
+    f=escHTML(f);
+    f=f.replace(/\*([^*\n]+)\*/g,'<b>$1</b>');
+    f=f.replace(/~([^~\n]+)~/g,'<s>$1</s>');
+    return f;
+  }).join('\n');
+}
+
+// ================================================================
+// STATE
+// ================================================================
+var currentStore='AEON';
+var qtyData={AEON:{},WATSONS:{}};
+var _activePage=null;
+var _parsedJSON=null;
+var _selectedField='bw';
+var FIELD_LABELS={bw:'Backwall',la:'Laci',rr:'Rak Reguler',rp:'Rak Promo',gu:'Gudang'};
+var _undoStack=[];
+var _redoStack=[];
+
+// ================================================================
+// LOG ACTIVITY
+// ================================================================
+var LS_LOG_KEY='implora_log_v1';
+var _activityLog=[];
+
+function getLogDateStr(){
+  var tgl=document.getElementById('tanggal').value;
+  if(tgl){var p=tgl.split('-');if(p.length===3)return p[2]+'/'+p[1]+'/'+p[0];}
+  var d=new Date(),dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0'),yy=d.getFullYear();
+  return dd+'/'+mm+'/'+yy;
+}
+function getShortDesc(desc){
+  var s=desc.replace(/^IMP(LORA)?\s+/i,'').replace(/\s*\([^)]*\)\s*$/,'').trim();
+  return s.toUpperCase();
+}
+function addLogEntry(store,prodIdx,field,oldVal,newVal){
+  var prods=store==='AEON'?PRODUCTS.aeon:PRODUCTS.watsons;
+  if(!prods[prodIdx])return;
+  var p=prods[prodIdx];
+  var oldN=parseInt(oldVal)||0,newN=parseInt(newVal)||0;
+  if(oldN===newN)return;
+  var sc=document.getElementById('storeCode').value||store;
+  var dateStr=getLogDateStr();
+  var fieldLabel=FIELD_LABELS[field]||field;
+  var shortName=getShortDesc(p.desc);
+  var diff=Math.abs(newN-oldN);
+  var action, actionValue;
+  if(newN>oldN){action='add to '+fieldLabel;actionValue='add value '+diff;}
+  else{action='remove from '+fieldLabel;actionValue='remove value '+diff;}
+  var line=dateStr+' '+sc+' || '+shortName+' || '+action+' || '+actionValue+' || value akhir '+newN;
+  _activityLog.push(line);
+  saveLog();
+}
+function saveLog(){try{localStorage.setItem(LS_LOG_KEY,JSON.stringify(_activityLog));}catch(e){}}
+function loadLog(){try{var r=localStorage.getItem(LS_LOG_KEY);if(r){_activityLog=JSON.parse(r);}}catch(e){_activityLog=[];}}
+function renderLogPage(){
+  var ta=document.getElementById('logTextarea');
+  var ci=document.getElementById('logCountInfo');
+  var si=document.getElementById('logStoreInfo');
+  if(!ta)return;
+  ta.value=_activityLog.join('\n');
+  if(ci)ci.textContent=_activityLog.length+' entri';
+  if(si)si.textContent='Store: '+currentStore+(document.getElementById('storeCode').value?' ('+document.getElementById('storeCode').value+')':'');
+}
+function copyLogActivity(){
+  if(!_activityLog.length){showToast('Log masih kosong');return;}
+  copyToClipboard(_activityLog.join('\n'));
+  showToast('\u2705 Log berhasil di-copy');
+}
+function downloadLogActivity(){
+  if(!_activityLog.length){showToast('Log masih kosong');return;}
+  var sc=document.getElementById('storeCode').value||currentStore;
+  var tgl=document.getElementById('tanggal').value||'';
+  var tglStr='';
+  if(tgl){var p=tgl.split('-');tglStr='_'+p[2]+'_'+p[1]+'_'+p[0];}
+  var fname='LOG_'+sc+tglStr+'.txt';
+  var blob=new Blob([_activityLog.join('\n')],{type:'text/plain'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  showToast('\u2705 Log didownload: '+fname);
+}
+function clearLogActivity(){
+  _activityLog=[];saveLog();renderLogPage();showToast('Log activity dihapus');
+}
+
+var STORE_DB=[
+  {code:'PIN',name:'Pondok Indah Mall'},{code:'NPV',name:'New Pejaten Village'},{code:'KCS',name:'Kalibata City Square'},
+  {code:'CPJ',name:'City Plaza Jatinegara'},{code:'CIM',name:'Cipinang Indah Mall'},{code:'NBM',name:'New Bassura Mall'},
+  {code:'LMN',name:'Lippo Mall Nusantara'},{code:'SNC',name:'Senayan City'},{code:'GPK',name:'Green Pramuka'},
+  {code:'ICM',name:'ITC Cempaka Mas'},{code:'7005',name:'AEON Health & Beauty Green Pramuka'},{code:'MLM',name:'Millennium Mall'},
+  {code:'GGP',name:'Grand Galaxy Park'},{code:'PPG',name:'Plaza Pondok Gede'},{code:'BUP',name:'Buaran Plaza'},
+  {code:'CCM',name:'Cibinong City Mall'},{code:'ELB',name:'Eka Lokasari Bogor'},{code:'BTM',name:'Bogor Trade Mall'},
+  {code:'CMD',name:'Cinere Mall Depok'},{code:'DMD',name:'Mall Depok'},{code:'MCR',name:'Margo City Reborn'},
+  {code:'TCB',name:'Trans Studio Cibubur'},{code:'LSS',name:'Lokasari Square'},{code:'MDM',name:'Mall Daan Mogot'},
+  {code:'MJT',name:'Menara Jakarta'},{code:'SKR',name:'Mall Karawaci Reborn'},{code:'LWM',name:'Living World'},
+  {code:'1006',name:'AEON Alam Sutera'},{code:'MSP',name:'Serpong Paradise'},{code:'IBS',name:'ITC BSD'},
+  {code:'TKO',name:'Teras Kota'},{code:'GMM',name:'Grand Metropolitan Mall'},{code:'PMB',name:'Pakuwon Mall Bekasi'},
+  {code:'MMB',name:'Metropolitan Mall Bekasi'},{code:'MKG',name:'Mall Kelapa Gading'},{code:'SNM',name:'Sunter Mall'},
+  {code:'MOI',name:'Mall Of Indonesia'},{code:'MAG',name:'Mall Artha Gading'},{code:'LHI',name:'Living Plaza Harapan Indah'},
+  {code:'1002',name:'AEON Jakarta Garden City'},{code:'KJI',name:'Kramat Jati Indah'},{code:'MKK',name:'Mall Kota Kasablanka'},
+  {code:'MCJ',name:'Mall Cijantung'},{code:'1004',name:'AEON Tanjung Barat'},{code:'PFT',name:'Plaza Festival'},
+  {code:'PZK',name:'Plaza Kalibata'},{code:'7001',name:'AEON Health & Beauty Lotte'},{code:'AOS',name:'AEON Sentul'},
+  {code:'1003',name:'AEON Sentul City'},{code:'LWK',name:'Living World Kotawisata'},{code:'PCB',name:'Plaza Cibubur'},
+  {code:'1007',name:'AEON Kota Wisata'},{code:'LCK',name:'Lippo Mall Cikarang'},{code:'1005',name:'AEON Deltamas'},
+  {code:'MPI',name:'Mall Puri Indah'},{code:'NLP',name:'New Lippo Mall Puri'},{code:'7002',name:'AEON Health & Beauty Puri'},
+  {code:'NKV',name:'New Kemang Village'},{code:'GDC',name:'Gandaria City'},{code:'7003',name:'AEON Health & Beauty BXC'},
+  {code:'CRT',name:'Citra Raya Tangerang'},{code:'1008',name:'AEON Ciputra Tangerang'},{code:'CEP',name:'Central Park'},
+  {code:'NGM',name:'New Gajah Mada Plaza'},{code:'7004',name:'AEON Health & Beauty Citraland'},{code:'1001',name:'AEON BSD City'},
+  {code:'1010',name:'AEON Eastvara'}
+];
+
+// ================================================================
+// UNDO/REDO
+// ================================================================
+function pushUndo(store,field,changedIdxs,beforeValues){
+  var entry={store:store,field:field,before:beforeValues,after:{}};
+  for(var i=0;i<changedIdxs.length;i++){var idx=changedIdxs[i];entry.after[idx]=(qtyData[store][idx]&&qtyData[store][idx][field])||'';}
+  _undoStack.push(entry);_redoStack=[];updateUndoRedoUI();
+}
+function updateUndoRedoUI(){
+  var btnU=document.getElementById('btnUndo'),btnR=document.getElementById('btnRedo'),info=document.getElementById('undoStackInfo');
+  if(!btnU)return;
+  btnU.disabled=_undoStack.length===0;btnR.disabled=_redoStack.length===0;
+  btnU.className='json-undo-btn'+(_undoStack.length>0?' undo-active':'');
+  btnR.className='json-undo-btn'+(_redoStack.length>0?' redo-active':'');
+  var parts=[];if(_undoStack.length>0)parts.push(_undoStack.length+' undo');if(_redoStack.length>0)parts.push(_redoStack.length+' redo');
+  info.textContent=parts.join('  |  ');
+}
+function openUndoConfirm(){if(_undoStack.length===0)return;var top=_undoStack[_undoStack.length-1];var cnt=Object.keys(top.before).length;document.getElementById('undoConfirmDesc').textContent='Import ke "'+FIELD_LABELS[top.field]+'" ('+top.store+') sebanyak '+cnt+' produk akan di-undo.\nAngka akan dikembalikan ke nilai sebelumnya.';document.getElementById('undoConfirmOverlay').classList.add('open');}
+function closeUndoConfirm(){document.getElementById('undoConfirmOverlay').classList.remove('open');}
+function confirmUndo(){closeUndoConfirm();if(_undoStack.length===0)return;var entry=_undoStack.pop();var keys=Object.keys(entry.before);for(var i=0;i<keys.length;i++){var idx=keys[i];if(!qtyData[entry.store][idx])qtyData[entry.store][idx]={bw:'',la:'',rr:'',rp:'',gu:''};qtyData[entry.store][idx][entry.field]=entry.before[idx];}_redoStack.push(entry);renderTable();scheduleSave();updateUndoRedoUI();showToast('Undo berhasil \u2014 '+keys.length+' produk dikembalikan');}
+function doRedo(){if(_redoStack.length===0)return;var entry=_redoStack.pop();var keys=Object.keys(entry.after);for(var i=0;i<keys.length;i++){var idx=keys[i];if(!qtyData[entry.store][idx])qtyData[entry.store][idx]={bw:'',la:'',rr:'',rp:'',gu:''};qtyData[entry.store][idx][entry.field]=entry.after[idx];}_undoStack.push(entry);renderTable();scheduleSave();updateUndoRedoUI();showToast('Redo berhasil \u2014 '+keys.length+' produk diterapkan kembali');}
+
+// ================================================================
+// STORE DROPDOWN
+// ================================================================
+var ddOpen=false;
+function toggleStoreDD(){ddOpen?closeStoreDD():openStoreDD();}
+function openStoreDD(){ddOpen=true;var dd=document.getElementById('storeDD'),btn=document.getElementById('storeDisplay'),rect=btn.getBoundingClientRect();dd.style.top=(rect.bottom+4)+'px';dd.style.left=rect.left+'px';dd.style.width=Math.max(rect.width,300)+'px';dd.classList.add('open');var s=document.getElementById('storeSearch');s.value='';renderStoreList('');setTimeout(function(){s.focus();},60);}
+function closeStoreDD(){ddOpen=false;document.getElementById('storeDD').classList.remove('open');}
+function renderStoreList(q){var query=(q||'').toLowerCase().trim();var filtered=query?STORE_DB.filter(function(s){return s.code.toLowerCase().indexOf(query)>=0||s.name.toLowerCase().indexOf(query)>=0;}):STORE_DB;var list=document.getElementById('storeList');if(!filtered.length){list.innerHTML='<div class="store-empty">Toko tidak ditemukan</div>';return;}var html='';for(var i=0;i<filtered.length;i++){var s=filtered[i];html+='<div class="store-opt" onmousedown="pickStore(\''+s.code+'\',\''+s.name.replace(/'/g,"\\'")+'\')">'+'<span class="store-code">'+s.code+'</span><span class="store-name">'+s.name+'</span></div>';}list.innerHTML=html;}
+function pickStore(code,name){document.getElementById('storeCode').value=code;document.getElementById('storeName2').value=name;document.getElementById('storeDisplay').textContent=code+' \u2014 '+name;closeStoreDD();scheduleSave();}
+document.addEventListener('click',function(e){if(ddOpen&&!e.target.closest('.store-picker')&&!e.target.closest('#storeDD'))closeStoreDD();});
+window.addEventListener('scroll',function(){if(ddOpen)openStoreDD();},true);
+window.addEventListener('resize',function(){if(ddOpen)openStoreDD();if(_filterDDOpen)openFilterDD();});
+
+// ================================================================
+// SEARCH + FILTER
+// ================================================================
+function onSearchInput(){
+  var v=document.getElementById('searchInput').value;
+  document.getElementById('searchClearBtn').classList.toggle('hidden',!v);
+  if(v&&_activeFilterKey){_activeFilterKey=null;updateFilterBtnState();}
+  applyFilter();
+}
+function clearSearch(e){
+  if(e)e.preventDefault();
+  var inp=document.getElementById('searchInput');
+  inp.value='';document.getElementById('searchClearBtn').classList.add('hidden');
+  _activeFilterKey=null;updateFilterBtnState();
+  inp.focus();applyFilter();
+}
+function applyFilter(){
+  var q=document.getElementById('searchInput').value.toLowerCase().trim();
+  var prods=getProds();
+  var rows=document.querySelectorAll('#productBody tr');
+  var vis=0;
+  for(var i=0;i<rows.length;i++){
+    var tr=rows[i];
+    var match;
+    if(_activeFilterKey){match=isProductInFilter(prods[i],_activeFilterKey);}
+    else if(q){match=tr.dataset.desc.indexOf(q)>=0||tr.dataset.kode.indexOf(q)>=0;}
+    else{match=true;}
+    tr.classList.toggle('hidden',!match);
+    if(match)vis++;
+  }
+  var total=prods.length,countEl=document.getElementById('searchCount');
+  if(_activeFilterKey)countEl.textContent='Filter aktif: '+vis+' produk '+getActiveFilterLabel();
+  else if(q)countEl.textContent='Menampilkan '+vis+' dari '+total+' produk';
+  else countEl.textContent=total+' produk';
+}
+
+// ================================================================
+// TABLE
+// ================================================================
+function getProds(){return currentStore==='AEON'?PRODUCTS.aeon:PRODUCTS.watsons;}
+function calcTotal(d){return(parseInt(d.bw)||0)+(parseInt(d.la)||0)+(parseInt(d.rr)||0)+(parseInt(d.rp)||0)+(parseInt(d.gu)||0);}
+function renderTable(){
+  var prods=getProds(),rows=[];
+  for(var i=0;i<prods.length;i++){
+    var p=prods[i],d=qtyData[currentStore][i]||{bw:'',la:'',rr:'',rp:'',gu:''},tot=calcTotal(d);
+    rows.push('<tr class="'+(tot>0?'has-val':'')+'" data-idx="'+i+'" data-desc="'+p.desc.toLowerCase()+'" data-kode="'+p.kode.toLowerCase()+'">' +
+      '<td class="td-no">'+p.no+'</td><td class="td-desc"><div class="prod-code">'+p.kode+'</div><div class="prod-name">'+p.desc+'</div></td>' +
+      mkCell(i,'bw',d.bw)+mkCell(i,'la',d.la)+mkCell(i,'rr',d.rr)+mkCell(i,'rp',d.rp)+mkCell(i,'gu',d.gu)+
+      '<td class="td-total" id="tot_'+i+'">'+(tot>0?tot:'-')+'</td></tr>');
+  }
+  document.getElementById('productBody').innerHTML=rows.join('');
+  updateStats();applyFilter();
+}
+function mkCell(idx,field,val){return '<td style="padding:6px 4px"><div class="qty-cell"><input class="qty-input" type="number" min="0" placeholder="-" value="'+(val||'')+'" data-idx="'+idx+'" data-field="'+field+'" oninput="onInput(this)" onkeydown="qtyKeyNav(event,this)"></div></td>';}
+
+function onInput(inp){
+  var idx=parseInt(inp.dataset.idx),field=inp.dataset.field;
+  var oldVal=(qtyData[currentStore][idx]&&qtyData[currentStore][idx][field])||'';
+  if(!qtyData[currentStore][idx])qtyData[currentStore][idx]={bw:'',la:'',rr:'',rp:'',gu:''};
+  qtyData[currentStore][idx][field]=inp.value;
+  refreshRow(idx);scheduleSave();
+  addLogEntry(currentStore,idx,field,oldVal,inp.value);
+  if(_activePage==='logactivity')renderLogPage();
+}
+
+function refreshRow(idx){var d=qtyData[currentStore][idx]||{},tot=calcTotal(d);var cell=document.getElementById('tot_'+idx);if(cell)cell.textContent=tot>0?tot:'-';var tr=document.querySelector('tr[data-idx="'+idx+'"]');if(tr)tr.className=tot>0?'has-val':'';updateStats();}
+function qtyKeyNav(e,inp){var idx=parseInt(inp.dataset.idx),field=inp.dataset.field;if(e.key==='Enter'){e.preventDefault();var next=document.querySelector('input[data-idx="'+(idx+1)+'"][data-field="'+field+'"]');if(next)next.focus();return;}if(e.key==='Backspace'){setTimeout(function(){if(inp.value===''||inp.value==='0'){var prev=document.querySelector('input[data-idx="'+(idx-1)+'"][data-field="'+field+'"]');if(prev)prev.focus();}},0);}}
+function updateStats(){var prods=getProds(),filled=0,total=0;for(var i=0;i<prods.length;i++){var t=calcTotal(qtyData[currentStore][i]||{});if(t>0)filled++;total+=t;}document.getElementById('statFilled').textContent=filled;document.getElementById('statTotal').textContent=total;}
+function switchStore(store){
+  currentStore=store;_activeFilterKey=null;updateFilterBtnState();
+  document.getElementById('sheetSelect').value=store;
+  document.getElementById('tabAEON').className=store==='AEON'?'tab active':'tab';
+  document.getElementById('tabWATSONS').className=store==='WATSONS'?'tab active':'tab';
+  document.getElementById('searchInput').value='';
+  document.getElementById('searchClearBtn').classList.add('hidden');
+  renderTable();
+}
+
+// ================================================================
+// JSON IMPORT
+// ================================================================
+function buildImportPlan(jsonObj,store){
+  var prods=store==='AEON'?PRODUCTS.aeon:PRODUCTS.watsons,plan=[],cats=Object.keys(jsonObj);
+  for(var ci=0;ci<cats.length;ci++){
+    var catKey=cats[ci],entries=jsonObj[catKey],catProds=[];
+    for(var pi=0;pi<prods.length;pi++)if(catMatchesProduct(prods[pi],catKey))catProds.push({p:prods[pi],idx:pi});
+    var ekeys=Object.keys(entries);
+    for(var ei=0;ei<ekeys.length;ei++){
+      var entryLabel=ekeys[ei],qty=parseInt(entries[entryLabel])||0;
+      if(qty<=0){plan.push({catKey:catKey,entryLabel:entryLabel,qty:qty,skipped:'qty=0'});continue;}
+      if(!catProds.length){plan.push({catKey:catKey,entryLabel:entryLabel,qty:qty,skipped:'kategori tidak cocok'});continue;}
+      var matched=[];
+      for(var mi=0;mi<catProds.length;mi++)if(entryMatchesProduct(entryLabel,catProds[mi].p))matched.push(catProds[mi]);
+      if(!matched.length){plan.push({catKey:catKey,entryLabel:entryLabel,qty:qty,skipped:'shade tidak ditemukan'});continue;}
+      plan.push({catKey:catKey,entryLabel:entryLabel,qty:qty,matchedIdx:matched[0].idx,matchedProd:matched[0].p,skipped:null});
+    }
+  }
+  return plan;
+}
+function onJSONInput(){
+  var raw=document.getElementById('jsonInput').value.trim();
+  var statusEl=document.getElementById('jsonStatus'),previewCard=document.getElementById('jsonPreviewCard');
+  _parsedJSON=null;updateRunBtn();
+  if(!raw){statusEl.textContent='Paste JSON di atas untuk memulai';statusEl.className='json-status';previewCard.style.display='none';return;}
+  try{
+    var obj=JSON.parse(raw);_parsedJSON=obj;
+    var cats=Object.keys(obj),totalEntries=0;
+    for(var i=0;i<cats.length;i++)totalEntries+=Object.keys(obj[cats[i]]).length;
+    statusEl.textContent='\u2705 JSON valid \u2014 '+cats.length+' kategori, '+totalEntries+' shade';
+    statusEl.className='json-status ok';renderJSONPreview(obj);updateRunBtn();
+  }catch(e){statusEl.textContent='\u274C JSON tidak valid: '+e.message;statusEl.className='json-status error';previewCard.style.display='none';}
+}
+function renderJSONPreview(obj){
+  var plan=buildImportPlan(obj,currentStore),previewCard=document.getElementById('jsonPreviewCard'),previewEl=document.getElementById('jsonPreview'),bycat={};
+  for(var i=0;i<plan.length;i++){if(!bycat[plan[i].catKey])bycat[plan[i].catKey]=[];bycat[plan[i].catKey].push(plan[i]);}
+  var html='',catkeys=Object.keys(bycat);
+  for(var ci=0;ci<catkeys.length;ci++){
+    var catKey=catkeys[ci],items=bycat[catKey];
+    html+='<div class="json-preview-item"><div class="json-preview-cat">'+catKey+'</div><div class="json-preview-entries">';
+    for(var ii=0;ii<items.length;ii++){
+      var it=items[ii];
+      if(!it.skipped){var shortName=it.matchedProd.desc.replace(/^IMP(LORA)?\s*/i,'').substring(0,40);html+='<div class="json-preview-entry">'+escHTML(it.entryLabel)+' &rarr; <span class="json-preview-qty">+'+it.qty+'</span> <span class="json-preview-found">\u2713 '+escHTML(shortName)+'</span></div>';}
+      else html+='<div class="json-preview-entry">'+escHTML(it.entryLabel)+' &rarr; <span class="json-preview-notfound">\u2717 '+it.skipped+'</span></div>';
+    }
+    html+='</div></div>';
+  }
+  var matched=0,skipped=0;for(var pi=0;pi<plan.length;pi++){if(!plan[pi].skipped)matched++;else skipped++;}
+  html='<div style="font-size:11px;color:rgba(255,255,255,.4);font-family:\'DM Mono\',monospace;margin-bottom:10px;">\u2705 '+matched+' akan diimport &nbsp;|&nbsp; \u26A0\uFE0F '+skipped+' dilewati</div>'+html;
+  previewEl.innerHTML=html;previewCard.style.display='block';
+}
+function selectField(btn){var btns=document.querySelectorAll('.json-field-btn');for(var i=0;i<btns.length;i++)btns[i].classList.remove('selected');btn.classList.add('selected');_selectedField=btn.dataset.field;updateRunBtn();if(_parsedJSON)renderJSONPreview(_parsedJSON);}
+function updateRunBtn(){document.getElementById('jsonRunBtn').disabled=!(_parsedJSON&&_selectedField);}
+function openJsonConfirm(){if(!_parsedJSON||!_selectedField)return;var plan=buildImportPlan(_parsedJSON,currentStore),willImport=[],willSkip=[];for(var i=0;i<plan.length;i++){if(!plan[i].skipped)willImport.push(plan[i]);else willSkip.push(plan[i]);}var fieldLabel=FIELD_LABELS[_selectedField]||_selectedField;document.getElementById('jsonConfirmTitle').textContent='Konfirmasi Import ke '+fieldLabel;document.getElementById('jsonConfirmDesc').textContent=willImport.length+' shade akan ditambahkan ke "'+fieldLabel+'".\n'+(willSkip.length>0?willSkip.length+' shade dilewati.\n':'')+'\nQTY yang sudah ada akan ditambah (tidak ditimpa).';document.getElementById('jsonConfirmOverlay').classList.add('open');}
+function closeJsonConfirm(){document.getElementById('jsonConfirmOverlay').classList.remove('open');}
+function executeImport(){
+  closeJsonConfirm();
+  if(!_parsedJSON||!_selectedField)return;
+  var plan=buildImportPlan(_parsedJSON,currentStore),willImport=[];
+  for(var i=0;i<plan.length;i++){if(!plan[i].skipped)willImport.push(plan[i]);}
+  if(!willImport.length){showToast('Tidak ada produk yang cocok');return;}
+  var field=_selectedField,store=currentStore,beforeValues={},changedIdxs=[];
+  for(var j=0;j<willImport.length;j++){var idx=willImport[j].matchedIdx;if(beforeValues[idx]===undefined){beforeValues[idx]=(qtyData[store][idx]&&qtyData[store][idx][field])||'';changedIdxs.push(idx);}}
+  for(var k=0;k<willImport.length;k++){
+    var it=willImport[k],ix=it.matchedIdx;
+    var oldV=(qtyData[store][ix]&&qtyData[store][ix][field])||'';
+    if(!qtyData[store][ix])qtyData[store][ix]={bw:'',la:'',rr:'',rp:'',gu:''};
+    var cur=parseInt(qtyData[store][ix][field])||0;
+    var newV=String(cur+it.qty);
+    qtyData[store][ix][field]=newV;
+    addLogEntry(store,ix,field,oldV,newV);
+  }
+  pushUndo(store,field,changedIdxs,beforeValues);
+  renderTable();scheduleSave();showToast('\u2705 '+willImport.length+' shade diimport ke '+(FIELD_LABELS[field]||field));
+  closeSidebarPage('importjson');
+}
+function pasteFromClipboard(){if(navigator.clipboard&&navigator.clipboard.readText){navigator.clipboard.readText().then(function(text){document.getElementById('jsonInput').value=text;onJSONInput();}).catch(function(){showToast('Akses clipboard ditolak, paste manual ya');});}else{showToast('Browser tidak support auto-paste, paste manual ya');}}
+function clearJSONTextarea(){document.getElementById('jsonInput').value='';onJSONInput();}
+
+// ================================================================
+// WA REPORT
+// ================================================================
+function openWAReport(){
+  _activePage='wa';setHeaderBack(false);setBottomBack(true);
+  var store=document.getElementById('sheetSelect').value,storeCode=document.getElementById('storeCode').value,storeName2=document.getElementById('storeName2').value,tgl=document.getElementById('tanggal').value||'',tglShort='';
+  if(tgl){var tp=tgl.split('-');tglShort=tp[2]+'/'+tp[1]+'/'+tp[0];}
+  var prods=store==='AEON'?PRODUCTS.aeon:PRODUCTS.watsons,kosong=[],menipis=[];
+  for(var i=0;i<prods.length;i++){var d=qtyData[store][i]||{},tot=calcTotal(d);if(tot===0)kosong.push(prods[i].desc);else if(tot===1||tot===2)menipis.push(prods[i].desc);}
+  var tmpl=loadWATemplates(),kunjKey=store==='AEON'?'aeon_kunjungan':'watsons_kunjungan',kunjText=tmpl[kunjKey]||'';
+  var headerLine=(store==='WATSONS'?(storeCode?'Watsons '+storeCode+' '+storeName2:'Watsons'):(storeName2||'Aeon'))+'\n'+tglShort;
+  var kosongText=kosong.length?kosong.map(function(n,i){return(i+1)+'. '+n;}).join('\n'):'-';
+  var menipisText=menipis.length?menipis.map(function(n,i){return(i+1)+'. '+n;}).join('\n'):'-';
+  document.getElementById('waScroll').innerHTML=
+    '<div class="wa-section"><div class="wa-section-header"><span>Header &amp; Tanggal</span></div><div class="wa-readonly">'+escHTML(headerLine)+'</div></div>' +
+    '<div class="wa-section"><div class="wa-section-header"><span>Hasil Kunjungan</span><button class="wa-edit-btn" onclick="toggleWAEdit(this,\'waKunjungan\',\''+kunjKey+'\')">&#x270F;&#xFE0F; Edit</button></div><div class="wa-readonly" id="waKunjunganDisplay">'+formatWAText(kunjText)+'</div><textarea class="wa-textarea" id="waKunjungan" style="display:none" rows="14" oninput="autoResizeTA(this)" onblur="saveWAEdit(this,\''+kunjKey+'\')">'+escAttr(kunjText)+'</textarea></div>' +
+    '<div class="wa-section"><div class="wa-section-header"><span>Stock Kosong ('+kosong.length+' item)</span></div><div class="wa-readonly">'+escHTML(kosongText)+'</div></div>' +
+    '<div class="wa-section"><div class="wa-section-header"><span>Stock Menipis ('+menipis.length+' item)</span></div><div class="wa-readonly">'+escHTML(menipisText)+'</div></div>';
+  document.getElementById('waPage').classList.add('open');
+  // Fetch data terbaru dari D1 di background — tampilan akan diupdate otomatis jika ada data baru
+  fetchWATemplateFromDB(store);
+}
+function closeWAReport(){_activePage=null;setHeaderBack(false);setBottomBack(false);document.getElementById('waPage').classList.remove('open');}
+function toggleWAEdit(btn,taId,key){var ta=document.getElementById(taId),disp=document.getElementById(taId+'Display'),isEdit=ta.style.display!=='none';if(isEdit){saveWAEdit(ta,key);ta.style.display='none';disp.style.display='';btn.innerHTML='&#x270F;&#xFE0F; Edit';}else{ta.style.display='';disp.style.display='none';autoResizeTA(ta);ta.focus();btn.innerHTML='&#x2705; Simpan';}}
+function saveWAEdit(ta,key){var tmpl=loadWATemplates();tmpl[key]=ta.value;saveWATemplates(tmpl);var disp=document.getElementById(ta.id+'Display');if(disp)disp.innerHTML=formatWAText(ta.value);}
+function autoResizeTA(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}
+function copyWAReport(){
+  var store=document.getElementById('sheetSelect').value,storeCode=document.getElementById('storeCode').value,storeName2=document.getElementById('storeName2').value,tgl=document.getElementById('tanggal').value||'',tglShort='';
+  if(tgl){var tp=tgl.split('-');tglShort=tp[2]+'/'+tp[1]+'/'+tp[0];}
+  var prods=store==='AEON'?PRODUCTS.aeon:PRODUCTS.watsons,kosong=[],menipis=[];
+  for(var i=0;i<prods.length;i++){var d=qtyData[store][i]||{},tot=calcTotal(d);if(tot===0)kosong.push(prods[i].desc);else if(tot===1||tot===2)menipis.push(prods[i].desc);}
+  var headerLine=(store==='WATSONS'?(storeCode?'Watsons '+storeCode+' '+storeName2:'Watsons'):(storeName2||'Aeon'))+'\n'+tglShort;
+  var tmpl=loadWATemplates(),kunjKey=store==='AEON'?'aeon_kunjungan':'watsons_kunjungan';
+  var kunjText=(tmpl[kunjKey]||'').replace(/^\* /gm,'- ');
+  var kosongBlock=kosong.length?kosong.map(function(n,i){return(i+1)+'. '+n;}).join('\n'):'-';
+  var menipisBlock=menipis.length?menipis.map(function(n,i){return(i+1)+'. '+n;}).join('\n'):'-';
+  copyToClipboard(headerLine+'\n\n*Hasil Kunjungan:*\n'+kunjText+'\n\n*Stock Kosong:*\n'+kosongBlock+'\n\n*Stock Menipis:*\n'+menipisBlock);
+  var btn=document.getElementById('waCopyBtn');btn.textContent='\u2705 Tersalin!';btn.className='wa-copy-all copied';setTimeout(function(){btn.textContent='Copy Semua';btn.className='wa-copy-all';},2000);
+}
+function copyToClipboard(text){var ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;width:2em;height:2em;opacity:0;';document.body.appendChild(ta);var isIOS=/ipad|iphone/i.test(navigator.userAgent);if(isIOS){var range=document.createRange();range.selectNodeContents(ta);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);ta.setSelectionRange(0,999999);}else{ta.select();}try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).catch(function(){});}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
+
+// ================================================================
+// SIDEBAR / PAGES
+// ================================================================
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarOverlay').classList.add('open');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('open');}
+function setHeaderBack(show){document.getElementById('headerBackBtn').style.visibility=show?'visible':'hidden';}
+function setBottomBack(show){document.getElementById('btnBackBar').style.display=show?'flex':'none';}
+function handleHeaderBack(){if(_activePage)closeSidebarPage(_activePage);}
+function handleBottomBack(){if(_activePage==='wa')closeWAReport();else if(_activePage)closeSidebarPage(_activePage);}
+function toggleMenu(){if(document.getElementById('sidebar').classList.contains('open'))closeSidebar();else openSidebar();}
+function refreshPage(){closeSidebar();saveToStorage();location.reload();}
+document.addEventListener('click',function(e){if(document.getElementById('sidebar').classList.contains('open')&&!e.target.closest('.sidebar')&&!e.target.closest('#btnThreeDot')&&!e.target.closest('#sidebarOverlay'))closeSidebar();});
+
+var PAGE_IDS={listproduk:'pageListProduk',totalsearch:'pageTotalSearch',importjson:'pageImportJSON',logactivity:'pageLogActivity',audiorecord:'pageAudioRecord'};
+
+function showSidebarPage(page){
+  _activePage=page;setHeaderBack(true);setBottomBack(true);
+  if(page==='listproduk')renderListProduk();
+  if(page==='totalsearch'){
+    if(_activeFilterKey){document.getElementById('tbsSearch').value='';}
+    else{document.getElementById('tbsSearch').value=document.getElementById('searchInput').value||'';}
+    runTotalSearch();
+  }
+  if(page==='importjson')updateUndoRedoUI();
+  if(page==='logactivity')renderLogPage();
+  if(page==='audiorecord'){
+    renderAudioList();
+    if(_isRecording){
+      document.getElementById('recBtn').classList.add('recording');
+      document.getElementById('stopBtn').disabled=false;
+      document.getElementById('recStatus').textContent='REC';
+      document.getElementById('recStatus').className='rec-status live';
+      document.getElementById('recTimer').textContent=formatTime(_recSeconds);
+      initVizBars();startVizAnimation();
+    }
+  }
+  if(PAGE_IDS[page])document.getElementById(PAGE_IDS[page]).classList.add('open');
+}
+
+function closeSidebarPage(page){
+  _activePage=null;setHeaderBack(false);setBottomBack(false);
+  if(page==='audiorecord'){stopVizAnimation();}
+  if(PAGE_IDS[page])document.getElementById(PAGE_IDS[page]).classList.remove('open');
+}
+
+// ================================================================
+// LIST PRODUK
+// ================================================================
+function renderListProduk(){
+  var prods=getProds(),kosong=[],menipis=[];
+  for(var i=0;i<prods.length;i++){var d=qtyData[currentStore][i]||{},tot=calcTotal(d);if(tot===0)kosong.push({kode:prods[i].kode,desc:prods[i].desc});else if(tot===1||tot===2)menipis.push({kode:prods[i].kode,desc:prods[i].desc,stok:tot});}
+  function mkCard(title,colorClass,items,hasStok){
+    var rows=items.length?items.map(function(item,n){return '<div class="report-item"><span class="report-num">'+(n+1)+'</span><div class="report-item-body"><div class="report-kode">'+item.kode+'</div><div class="report-desc">'+item.desc+'</div></div>'+(hasStok?'<span class="report-stok">Sisa '+item.stok+'</span>':'')+'</div>';}).join(''):'<div class="report-empty">\u2705 Tidak ada item</div>';
+    var typeKey=colorClass==='red'?'kosong':'hampir',tCap=typeKey.charAt(0).toUpperCase()+typeKey.slice(1);
+    var btns=items.length?'<button class="btn-copy '+colorClass+'" id="copy'+tCap+'Kode" onclick="copyList(\''+typeKey+'\',\'kode\')">NO. BARANG</button><button class="btn-copy '+colorClass+'" id="copy'+tCap+'Nama" onclick="copyList(\''+typeKey+'\',\'nama\')">NAMA PRODUK</button>':'<button class="btn-copy '+colorClass+'" disabled style="opacity:.4">NO. BARANG</button><button class="btn-copy '+colorClass+'" disabled style="opacity:.4">NAMA PRODUK</button>';
+    return '<div class="report-card" style="margin-bottom:14px"><div class="report-card-header"><div style="display:flex;align-items:center;gap:10px"><span class="report-card-title">'+title+'</span><span class="report-badge '+colorClass+'">'+items.length+'</span></div><div style="display:flex;gap:6px">'+btns+'</div></div><div class="report-list">'+rows+'</div></div>';
+  }
+  document.getElementById('listProdukContent').innerHTML=mkCard('List Produk Kosong','red',kosong,false)+mkCard('List Produk Hampir Habis','orange',menipis,true);
+}
+function copyList(type,field){
+  var prods=getProds(),items=[];
+  for(var i=0;i<prods.length;i++){var d=qtyData[currentStore][i]||{},tot=calcTotal(d);if(type==='kosong'&&tot===0)items.push({kode:prods[i].kode,desc:prods[i].desc});else if(type==='hampir'&&(tot===1||tot===2))items.push({kode:prods[i].kode,desc:prods[i].desc,stok:tot});}
+  var colorClass=type==='kosong'?'red':'orange',tCap=type.charAt(0).toUpperCase()+type.slice(1),btnId='copy'+tCap+(field==='kode'?'Kode':'Nama');
+  if(!items.length){showToast('Tidak ada data untuk di-copy');return;}
+  copyToClipboard(field==='kode'?items.map(function(i){return i.kode;}).join('\n'):items.map(function(i,n){return(n+1)+'. '+i.desc;}).join('\n'));
+  var btn=document.getElementById(btnId);
+  if(btn){var orig=btn.textContent;btn.textContent='COPIED!';btn.className='btn-copy copied';setTimeout(function(){btn.textContent=orig;btn.className='btn-copy '+colorClass;},1800);}
+}
+
+// ================================================================
+// TOTAL BY SEARCH
+// ================================================================
+function runTotalSearch(){
+  var q=(document.getElementById('tbsSearch').value||'').toLowerCase().trim();
+  var prods=getProds(),out=document.getElementById('tbsResult');
+  if(_activeFilterKey&&!q){
+    var totals={bw:0,la:0,rr:0,rp:0,gu:0,tot:0},matched=0;
+    for(var i=0;i<prods.length;i++){
+      if(!isProductInFilter(prods[i],_activeFilterKey))continue;
+      var d=qtyData[currentStore][i]||{},bw=parseInt(d.bw)||0,la=parseInt(d.la)||0,rr=parseInt(d.rr)||0,rp=parseInt(d.rp)||0,gu=parseInt(d.gu)||0;
+      totals.bw+=bw;totals.la+=la;totals.rr+=rr;totals.rp+=rp;totals.gu+=gu;totals.tot+=bw+la+rr+rp+gu;matched++;
+    }
+    var filterLabel=getActiveFilterLabel();
+    out.innerHTML='<div class="tbs-card"><div class="tbs-card-title">Total QTY &mdash; '+filterLabel+' ('+matched+' produk)</div><div class="tbs-grid">'+mkTBSCol('Backwall',totals.bw)+mkTBSCol('Laci',totals.la)+mkTBSCol('Rak Reguler',totals.rr)+mkTBSCol('Rak Promo',totals.rp)+mkTBSCol('Gudang',totals.gu)+mkTBSCol('TOTAL',totals.tot,true)+'</div><div class="tbs-matched">'+matched+' produk '+filterLabel+'</div></div>';
+    return;
+  }
+  if(!q){out.innerHTML='<div class="tbs-empty">Ketik nama atau kode produk untuk melihat total stok</div>';return;}
+  var totals2={bw:0,la:0,rr:0,rp:0,gu:0,tot:0},matched2=0;
+  for(var j=0;j<prods.length;j++){
+    if(prods[j].desc.toLowerCase().indexOf(q)<0&&prods[j].kode.toLowerCase().indexOf(q)<0)continue;
+    var d2=qtyData[currentStore][j]||{},bw2=parseInt(d2.bw)||0,la2=parseInt(d2.la)||0,rr2=parseInt(d2.rr)||0,rp2=parseInt(d2.rp)||0,gu2=parseInt(d2.gu)||0;
+    totals2.bw+=bw2;totals2.la+=la2;totals2.rr+=rr2;totals2.rp+=rp2;totals2.gu+=gu2;totals2.tot+=bw2+la2+rr2+rp2+gu2;matched2++;
+  }
+  if(!matched2){out.innerHTML='<div class="tbs-empty">Tidak ada produk cocok dengan "'+q+'"</div>';return;}
+  out.innerHTML='<div class="tbs-card"><div class="tbs-card-title">Total QTY &mdash; '+matched2+' produk cocok</div><div class="tbs-grid">'+mkTBSCol('Backwall',totals2.bw)+mkTBSCol('Laci',totals2.la)+mkTBSCol('Rak Reguler',totals2.rr)+mkTBSCol('Rak Promo',totals2.rp)+mkTBSCol('Gudang',totals2.gu)+mkTBSCol('TOTAL',totals2.tot,true)+'</div><div class="tbs-matched">'+matched2+' produk cocok dengan "'+q+'"</div></div>';
+}
+function mkTBSCol(label,val,gold){return '<div class="tbs-col"><div class="tbs-col-label">'+label+'</div><div class="tbs-col-val'+(gold?' gold':'')+'">'+( val||0)+'</div></div>';}
+
+// ================================================================
+// AUDIO RECORD
+// Perubahan utama v22:
+//  - Prioritas MIME type: audio/mp4 (AAC/M4A) didahulukan → native iOS
+//  - getUserMedia pakai echoCancellation + noiseSuppression
+//  - Ext detection akurat: mp4 → 'm4a', webm → 'webm', ogg → 'ogg'
+//  - Format badge ditampilkan di list rekaman
+// ================================================================
+var _mediaRecorder=null;
+var _audioChunks=[];
+var _isRecording=false;
+var _recTimerInterval=null;
+var _recSeconds=0;
+var _audioRecordings=[];
+var _audioDelIdx=null;
+var _vizInterval=null;
+var _audioContext=null;
+var _analyser=null;
+var _vizBars=[];
+var VIZ_BAR_COUNT=40;
+var LS_AUDIO_KEY='implora_audio_v1';
+
+// Deteksi MIME type terbaik yang didukung browser
+// iOS Safari → audio/mp4 (AAC, langsung play tanpa konversi)
+// Chrome Android → audio/webm;codecs=opus
+// Firefox → audio/ogg;codecs=opus
+function getBestAudioMimeType(){
+  var candidates=[
+    'audio/mp4;codecs=mp4a.40.2',  // AAC-LC dalam container MP4 — iOS native
+    'audio/mp4',                    // Fallback MP4 tanpa codec spesifik
+    'audio/webm;codecs=opus',       // Chrome/Android
+    'audio/webm',                   // Chrome fallback
+    'audio/ogg;codecs=opus',        // Firefox
+    'audio/ogg'                     // Firefox fallback
+  ];
+  for(var i=0;i<candidates.length;i++){
+    if(typeof MediaRecorder!=='undefined'&&MediaRecorder.isTypeSupported(candidates[i])){
+      return candidates[i];
+    }
+  }
+  return ''; // biarkan browser pilih sendiri
+}
+
+// Ambil ekstensi file dari mimeType
+function mimeToExt(mimeType){
+  if(!mimeType)return 'webm';
+  var m=mimeType.toLowerCase();
+  if(m.indexOf('mp4')>=0||m.indexOf('m4a')>=0||m.indexOf('aac')>=0)return 'm4a';
+  if(m.indexOf('ogg')>=0)return 'ogg';
+  return 'webm';
+}
+
+function saveAudioToStorage(){
+  try{
+    var toSave=_audioRecordings.map(function(r){
+      return {id:r.id,name:r.name,ext:r.ext,size:r.size,duration:r.duration,ts:r.ts,b64:r.b64||null};
+    });
+    localStorage.setItem(LS_AUDIO_KEY,JSON.stringify(toSave));
+  }catch(e){
+    try{localStorage.removeItem(LS_AUDIO_KEY);}catch(e2){}
+  }
+}
+function loadAudioFromStorage(){
+  try{
+    var raw=localStorage.getItem(LS_AUDIO_KEY);
+    if(!raw)return;
+    var arr=JSON.parse(raw);
+    _audioRecordings=[];
+    for(var i=0;i<arr.length;i++){
+      var item=arr[i];
+      var url=null;
+      if(item.b64){
+        try{
+          var byteStr=atob(item.b64.split(',')[1]||item.b64);
+          var mimeMatch=item.b64.match(/data:([^;]+);/);
+          var mime=mimeMatch?mimeMatch[1]:'audio/mp4';
+          var ab=new ArrayBuffer(byteStr.length);
+          var ia=new Uint8Array(ab);
+          for(var j=0;j<byteStr.length;j++)ia[j]=byteStr.charCodeAt(j);
+          var blob=new Blob([ab],{type:mime});
+          url=URL.createObjectURL(blob);
+          item.blob=blob;
+        }catch(e){url=null;}
+      }
+      item.url=url;
+      _audioRecordings.push(item);
+    }
+  }catch(e){_audioRecordings=[];}
+}
+
+function getLocalDateStr(){
+  var d=new Date();
+  var y=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+  return y+'-'+mo+'-'+day;
+}
+function formatTime(secs){var m=Math.floor(secs/60),s=secs%60;return m+':'+(s<10?'0':'')+s;}
+function formatFileSize(bytes){if(bytes<1024)return bytes+'B';if(bytes<1048576)return(bytes/1024).toFixed(1)+'KB';return(bytes/1048576).toFixed(1)+'MB';}
+
+function initVizBars(){
+  var viz=document.getElementById('audioViz');
+  if(!viz)return;
+  viz.innerHTML='';_vizBars=[];
+  for(var i=0;i<VIZ_BAR_COUNT;i++){var bar=document.createElement('div');bar.className='viz-bar';bar.style.height='4px';bar.style.flex='1';viz.appendChild(bar);_vizBars.push(bar);}
+}
+
+function startVizAnimation(){
+  if(_vizInterval)return;
+  if(!_analyser){
+    _vizInterval=setInterval(function(){
+      for(var i=0;i<_vizBars.length;i++){var h=Math.floor(Math.random()*28)+4;_vizBars[i].style.height=h+'px';_vizBars[i].style.opacity=0.5+Math.random()*0.5;}
+    },100);
+    return;
+  }
+  var dataArray=new Uint8Array(_analyser.frequencyBinCount);
+  _vizInterval=setInterval(function(){
+    _analyser.getByteFrequencyData(dataArray);
+    var step=Math.floor(dataArray.length/Math.max(_vizBars.length,1));
+    for(var i=0;i<_vizBars.length;i++){var val=dataArray[i*step]/255;var h=Math.max(4,Math.floor(val*32));_vizBars[i].style.height=h+'px';_vizBars[i].style.opacity=0.3+val*0.7;}
+  },60);
+}
+
+function stopVizAnimation(){
+  if(_vizInterval){clearInterval(_vizInterval);_vizInterval=null;}
+  for(var i=0;i<_vizBars.length;i++){_vizBars[i].style.height='4px';_vizBars[i].style.opacity='0.4';}
+}
+
+function toggleRecording(){if(_isRecording){stopRecording();}else{startRecording();}}
+
+function startRecording(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){showToast('Browser tidak mendukung perekaman audio');return;}
+  // Gunakan constraint audio dengan noise/echo cancellation untuk kualitas lebih baik
+  navigator.mediaDevices.getUserMedia({
+    audio:{echoCancellation:true,noiseSuppression:true,sampleRate:44100},
+    video:false
+  }).then(function(stream){
+    try{
+      _audioContext=new (window.AudioContext||window.webkitAudioContext)();
+      var source=_audioContext.createMediaStreamSource(stream);
+      _analyser=_audioContext.createAnalyser();_analyser.fftSize=256;source.connect(_analyser);
+    }catch(e){_analyser=null;}
+
+    // Pilih MIME type terbaik — prioritas MP4/AAC untuk iOS
+    var mimeType=getBestAudioMimeType();
+    var options=mimeType?{mimeType:mimeType}:{};
+
+    try{_mediaRecorder=new MediaRecorder(stream,options);}
+    catch(e){
+      // Jika opsi gagal, coba tanpa mimeType
+      try{_mediaRecorder=new MediaRecorder(stream);}
+      catch(e2){showToast('Browser tidak mendukung perekaman audio');return;}
+    }
+
+    _audioChunks=[];
+    _mediaRecorder.addEventListener('dataavailable',function(e){if(e.data&&e.data.size>0)_audioChunks.push(e.data);});
+    _mediaRecorder.addEventListener('stop',function(){onRecordingStopped(stream);});
+    _mediaRecorder.start(100);
+    _isRecording=true;_recSeconds=0;
+
+    var recBtn=document.getElementById('recBtn'),stopBtn=document.getElementById('stopBtn'),recStatus=document.getElementById('recStatus'),recTimer=document.getElementById('recTimer');
+    if(recBtn)recBtn.classList.add('recording');if(stopBtn)stopBtn.disabled=false;
+    if(recStatus){recStatus.textContent='REC';recStatus.className='rec-status live';}
+    if(recTimer)recTimer.textContent='0:00';
+    document.getElementById('recFloatBar').classList.remove('hidden');document.getElementById('recFloatTime').textContent='0:00';
+    initVizBars();startVizAnimation();
+    _recTimerInterval=setInterval(function(){
+      _recSeconds++;var ts=formatTime(_recSeconds);
+      var rt=document.getElementById('recTimer');if(rt)rt.textContent=ts;
+      document.getElementById('recFloatTime').textContent=ts;
+    },1000);
+  }).catch(function(err){
+    var msg='Tidak dapat akses mikrofon';
+    if(err.name==='NotAllowedError')msg='Izin mikrofon ditolak. Aktifkan di pengaturan browser.';
+    else if(err.name==='NotFoundError')msg='Mikrofon tidak ditemukan di perangkat ini.';
+    showToast(msg);
+  });
+}
+
+function stopRecording(){
+  if(!_isRecording||!_mediaRecorder)return;
+  _mediaRecorder.stop();clearInterval(_recTimerInterval);_recTimerInterval=null;_isRecording=false;
+  var recBtn=document.getElementById('recBtn'),stopBtn=document.getElementById('stopBtn'),recStatus=document.getElementById('recStatus');
+  if(recBtn)recBtn.classList.remove('recording');if(stopBtn)stopBtn.disabled=true;
+  if(recStatus){recStatus.textContent='Memproses...';recStatus.className='rec-status';}
+  document.getElementById('recFloatBar').classList.add('hidden');
+  stopVizAnimation();
+  if(_audioContext){try{_audioContext.close();}catch(e){}}_audioContext=null;_analyser=null;
+}
+
+function blobToBase64(blob,cb){
+  var reader=new FileReader();reader.onload=function(){cb(reader.result);};reader.readAsDataURL(blob);
+}
+
+function onRecordingStopped(stream){
+  stream.getTracks().forEach(function(t){t.stop();});
+  if(!_audioChunks.length){var rs=document.getElementById('recStatus');if(rs)rs.textContent='Siap merekam';return;}
+
+  // Gunakan mimeType dari mediaRecorder yang aktual (bukan asumsi)
+  var actualMime=(_mediaRecorder&&_mediaRecorder.mimeType)?_mediaRecorder.mimeType:'';
+  var blob=new Blob(_audioChunks,{type:actualMime||'audio/mp4'});
+
+  var nameInput=document.getElementById('audioNameInput').value.trim();
+  var now=new Date();
+  var _sc=document.getElementById('storeCode').value||'';
+  var _tgl=document.getElementById('tanggal').value||'';
+  var _tglShort=_tgl?(function(){var p=_tgl.split('-');return p[2]+'/'+p[1]+'/'+p[0];})():'';
+  var _suffix=[_sc,_tglShort].filter(Boolean).join(' ');
+  var autoName='REC_'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0')+String(now.getSeconds()).padStart(2,'0');
+  var baseName=nameInput||autoName;
+  var finalName=_suffix?baseName+' '+_suffix:baseName;
+
+  // Ekstensi berdasarkan mimeType aktual — bukan hardcode
+  var ext=mimeToExt(actualMime);
+
+  var url=URL.createObjectURL(blob);
+  var recObj={id:Date.now(),name:finalName,ext:ext,size:blob.size,duration:_recSeconds,url:url,blob:blob,ts:now.toISOString(),b64:null,mime:actualMime};
+  _audioRecordings.unshift(recObj);
+
+  // Simpan ke localStorage (base64) untuk persist lintas refresh
+  blobToBase64(blob,function(b64){
+    recObj.b64=b64;
+    saveAudioToStorage();
+  });
+
+  var rs=document.getElementById('recStatus'),rt=document.getElementById('recTimer'),ni=document.getElementById('audioNameInput');
+  if(rs)rs.textContent='Siap merekam';if(rt)rt.textContent='0:00';if(ni)ni.value='';
+  if(_activePage==='audiorecord')renderAudioList();
+  showToast('\u2705 Rekaman tersimpan: '+finalName+'.'+ext);
+}
+
+function renderAudioList(){
+  var list=document.getElementById('audioList'),count=document.getElementById('audioResultsCount');
+  if(!list)return;
+  count.textContent=_audioRecordings.length+' file';
+  if(!_audioRecordings.length){list.innerHTML='<div class="audio-empty">Belum ada rekaman. Tekan tombol merah untuk mulai merekam.</div>';return;}
+  var html='';
+  for(var i=0;i<_audioRecordings.length;i++){
+    var r=_audioRecordings[i];
+    var dt=new Date(r.ts);
+    var dtStr=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+    var canPlay=!!r.url;
+    var extLabel=(r.ext||'?').toUpperCase();
+    html+='<div class="audio-item" id="audio-item-'+r.id+'">' +
+      '<div class="audio-item-icon">&#x1F399;</div>' +
+      '<div class="audio-item-info"><div class="audio-item-name">'+escHTML(r.name)+'</div>' +
+      '<div class="audio-item-meta"><span class="audio-fmt-badge">'+extLabel+'</span>'+formatTime(r.duration)+' &bull; '+formatFileSize(r.size)+' &bull; '+dtStr+'</div></div>' +
+      '<div class="audio-item-btns">' +
+      (canPlay?'<button class="audio-action-btn play-btn" title="Play/Pause" onclick="togglePlayAudio('+r.id+',this)">&#x25B6;</button>':'<button class="audio-action-btn play-btn" title="Audio tidak tersedia" disabled style="opacity:.3">&#x25B6;</button>')+
+      (canPlay?'<button class="audio-action-btn dl" title="Download '+extLabel+'" onclick="downloadAudio('+r.id+')">&#x2B07;</button>':'<button class="audio-action-btn dl" title="Download tidak tersedia" disabled style="opacity:.3">&#x2B07;</button>')+
+      '<button class="audio-action-btn del" title="Hapus" onclick="openAudioDelModal('+r.id+')">&#x1F5D1;</button>' +
+      '</div></div>' +
+      '<div class="audio-player-mini" id="audio-player-'+r.id+'" style="display:none">' +
+      (canPlay?'<audio id="audio-el-'+r.id+'" src="'+r.url+'" onended="onAudioEnded('+r.id+')" style="width:100%;height:32px"></audio>':'') +
+      '</div>';
+  }
+  list.innerHTML=html;
+}
+
+var _currentlyPlayingId=null;
+function togglePlayAudio(id,btn){
+  if(_currentlyPlayingId&&_currentlyPlayingId!==id){
+    var oldEl=document.getElementById('audio-el-'+_currentlyPlayingId);var oldBtn=document.querySelector('#audio-item-'+_currentlyPlayingId+' .play-btn');var oldPlayer=document.getElementById('audio-player-'+_currentlyPlayingId);
+    if(oldEl){oldEl.pause();oldEl.currentTime=0;}if(oldBtn){oldBtn.innerHTML='&#x25B6;';oldBtn.classList.remove('playing');}if(oldPlayer)oldPlayer.style.display='none';_currentlyPlayingId=null;
+  }
+  var el=document.getElementById('audio-el-'+id),player=document.getElementById('audio-player-'+id);
+  if(!el){renderAudioList();el=document.getElementById('audio-el-'+id);player=document.getElementById('audio-player-'+id);}
+  if(!el)return;
+  if(el.paused){player.style.display='block';el.play();btn.innerHTML='&#x23F8;';btn.classList.add('playing');_currentlyPlayingId=id;}
+  else{el.pause();btn.innerHTML='&#x25B6;';btn.classList.remove('playing');_currentlyPlayingId=null;}
+}
+function onAudioEnded(id){var btn=document.querySelector('#audio-item-'+id+' .play-btn');var player=document.getElementById('audio-player-'+id);if(btn){btn.innerHTML='&#x25B6;';btn.classList.remove('playing');}if(player)player.style.display='none';_currentlyPlayingId=null;}
+
+function downloadAudio(id){
+  for(var i=0;i<_audioRecordings.length;i++){
+    if(_audioRecordings[i].id===id){
+      var r=_audioRecordings[i];
+      if(!r.url){showToast('Audio tidak tersedia untuk download');return;}
+      var a=document.createElement('a');
+      a.href=r.url;
+      a.download=r.name+'.'+r.ext; // ekstensi sudah benar (m4a/webm/ogg)
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      showToast('Mengunduh: '+r.name+'.'+r.ext);
+      return;
+    }
+  }
+}
+
+function openAudioDelModal(id){
+  _audioDelIdx=id;for(var i=0;i<_audioRecordings.length;i++){if(_audioRecordings[i].id===id){document.getElementById('audioDelDesc').textContent='"'+_audioRecordings[i].name+'" akan dihapus permanen.';break;}}
+  document.getElementById('audioDelOverlay').classList.add('open');
+}
+function closeAudioDelModal(){_audioDelIdx=null;document.getElementById('audioDelOverlay').classList.remove('open');}
+function confirmDeleteAudio(){
+  if(_audioDelIdx===null){closeAudioDelModal();return;}
+  if(_currentlyPlayingId===_audioDelIdx){var el=document.getElementById('audio-el-'+_audioDelIdx);if(el)el.pause();_currentlyPlayingId=null;}
+  for(var i=0;i<_audioRecordings.length;i++){if(_audioRecordings[i].id===_audioDelIdx){if(_audioRecordings[i].url)URL.revokeObjectURL(_audioRecordings[i].url);_audioRecordings.splice(i,1);break;}}
+  saveAudioToStorage();closeAudioDelModal();renderAudioList();showToast('Rekaman dihapus');
+}
+
+// ================================================================
+// RESET
+// ================================================================
+function openResetModal(){document.getElementById('resetOverlay').classList.add('open');}
+function closeResetModal(){document.getElementById('resetOverlay').classList.remove('open');}
+function closeResetOnBg(e){if(e.target===document.getElementById('resetOverlay'))closeResetModal();}
+function confirmReset(){
+  qtyData.AEON={};qtyData.WATSONS={};_activeFilterKey=null;updateFilterBtnState();
+  _undoStack=[];_redoStack=[];updateUndoRedoUI();
+  document.getElementById('storeCode').value='';document.getElementById('storeName2').value='';
+  document.getElementById('storeDisplay').textContent='Pilih toko...';
+  document.getElementById('tanggal').value=getLocalDateStr();
+  document.getElementById('namaBA').value='';
+  for(var i=0;i<_audioRecordings.length;i++){if(_audioRecordings[i].url)URL.revokeObjectURL(_audioRecordings[i].url);}
+  _audioRecordings=[];
+  _activityLog=[];
+  clearStorage();
+  saveAudioToStorage();
+  saveLog();
+  closeResetModal();renderTable();showToast('\u2705 Semua data berhasil direset');
+}
+
+// ================================================================
+// EXCEL EXPORT
+// ================================================================
+function exportExcel(){
+  var storeCode=document.getElementById('storeCode').value,storeName2=document.getElementById('storeName2').value,namaBA=document.getElementById('namaBA').value||'\u2014',namaTokoLabel=storeCode?(storeCode+' \u2014 '+storeName2):'\u2014',tgl=document.getElementById('tanggal').value||'\u2014',sheetSel=document.getElementById('sheetSelect').value;
+  var C={NAVY:'1E2A3A',TEAL:'2E7D8C',MINT:'E8F5E9',WHITE:'FFFFFF',GOLD:'F59E0B',GOLD_L:'FFFBEB',GOLD_D:'B45309',ROSE:'C8506A',RED_BG:'FFEBEE',RED_FG:'C62828',ORANGE_BG:'FFF3E0',ORANGE_FG:'E65100',AMBER_BG:'FFFDE7',PURPLE:'4A1A6A',PURPLE_LIGHT:'F3E8FF',SECTION_HEAD:'2C3E50'};
+  function st(fill,fontColor,sz,bold,halign,valign,wrap){return{fill:{fgColor:{rgb:fill}},font:{name:'Calibri',sz:sz||10,bold:!!bold,color:{rgb:fontColor||'000000'}},alignment:{horizontal:halign||'left',vertical:valign||'center',wrapText:!!wrap}};}
+  function stk(fill,fontColor,sz,bold,halign){return st(fill,fontColor,sz,bold,halign,'center',false);}
+  var wb=XLSX.utils.book_new();
+  ['AEON','WATSONS'].forEach(function(store){
+    var prods=store==='AEON'?PRODUCTS.aeon:PRODUCTS.watsons;
+    var rows=[],styles={},merges=[],rowHeights={};
+    function addr(r,c){var col='',cc=c;do{col=String.fromCharCode(65+(cc%26))+col;cc=Math.floor(cc/26)-1;}while(cc>=0);return col+(r+1);}
+    function sty(r,c,s){styles[addr(r,c)]=s;}
+    function merge(r1,c1,r2,c2){merges.push({s:{r:r1,c:c1},e:{r:r2,c:c2}});}
+    rows.push(['FORM OPNAME STORE \u2014 IMPLORA','','','','','','','','']);
+    merge(0,0,0,8);sty(0,0,st(C.NAVY,'FFFFFF',14,true,'center','center'));rowHeights[0]=30;
+    var infoLine=store+' | '+(store===sheetSel?namaTokoLabel:'\u2014')+' | '+(store===sheetSel?tgl:'\u2014')+' | BA: '+(store===sheetSel?namaBA:'\u2014');
+    rows.push([infoLine,'','','','','','','','']);
+    merge(1,0,1,8);sty(1,0,st(C.ROSE,'FFFFFF',10,false,'center','center'));rowHeights[1]=18;
+    rows.push(['','','','','','','','','']);rowHeights[2]=6;
+    rows.push(['NO.','NO BARANG','DESKRIPSI BARANG','QTY OPNAME','','','','','TOTAL']);
+    merge(3,3,3,7);for(var ci=0;ci<=8;ci++)sty(3,ci,st(C.NAVY,'FFFFFF',10,true,'center','center',true));rowHeights[3]=22;
+    rows.push(['','','','Backwall','Laci','Rak Reguler','Rak Promo','Gudang','']);
+    for(var c2=0;c2<=2;c2++)sty(4,c2,st(C.NAVY,'FFFFFF',10,true,'center','center'));
+    for(var c3=3;c3<=7;c3++)sty(4,c3,stk(C.TEAL,'FFFFFF',10,true,'center'));
+    sty(4,8,stk(C.GOLD,'FFFFFF',10,true,'center'));rowHeights[4]=18;
+    var DATA_START=5;
+    for(var idx=0;idx<prods.length;idx++){
+      var p=prods[idx],d=qtyData[store][idx]||{};
+      var bw=parseInt(d.bw)||0,la=parseInt(d.la)||0,rr=parseInt(d.rr)||0,rp=parseInt(d.rp)||0,gu=parseInt(d.gu)||0,tot=bw+la+rr+rp+gu;
+      rows.push([p.no,p.kode,p.desc,bw||'',la||'',rr||'',rp||'',gu||'',tot||'']);
+      var ri=DATA_START+idx;rowHeights[ri]=16;
+      if(tot===0){sty(ri,0,stk(C.RED_BG,C.RED_FG,10,true,'center'));sty(ri,1,stk(C.RED_BG,C.RED_FG,9,false,'left'));sty(ri,2,stk(C.RED_BG,C.RED_FG,9,false,'left'));for(var a=3;a<=7;a++)sty(ri,a,stk(C.RED_BG,'888888',10,false,'center'));sty(ri,8,stk(C.RED_BG,C.RED_FG,10,true,'center'));}
+      else if(tot===1||tot===2){var lb=tot===1?'FFF3E0':'FFFDE7';sty(ri,0,stk(lb,C.ORANGE_FG,10,true,'center'));sty(ri,1,stk(lb,'5D4037',9,false,'left'));sty(ri,2,stk(lb,'5D4037',9,false,'left'));for(var b=3;b<=7;b++)sty(ri,b,stk(lb,'888888',10,false,'center'));sty(ri,8,stk(lb,C.ORANGE_FG,11,true,'center'));}
+      else{var even=idx%2===0,bg=even?C.MINT:C.WHITE;sty(ri,0,stk(bg,'666666',10,false,'center'));sty(ri,1,stk(bg,'333333',9,false,'left'));sty(ri,2,stk(bg,'333333',9,false,'left'));for(var c4=3;c4<=7;c4++)sty(ri,c4,stk(bg,'444444',10,false,'center'));sty(ri,8,stk(C.GOLD_L,C.GOLD_D,11,true,'center'));}
+    }
+    var sumR=DATA_START+prods.length;
+    rows.push(['','','TOTAL KESELURUHAN','','','','','',{f:'SUM('+addr(DATA_START,8)+':'+addr(sumR-1,8)+')'}]);
+    sty(sumR,8,stk(C.GOLD,'FFFFFF',11,true,'center'));
+    sty(sumR,0,stk('ECEFF1','444444',10,false,'center'));sty(sumR,1,stk('ECEFF1','444444',10,false,'left'));sty(sumR,2,stk('ECEFF1','444444',10,true,'left'));
+    for(var d2=3;d2<=7;d2++)sty(sumR,d2,stk('ECEFF1','444444',10,false,'center'));
+    rowHeights[sumR]=18;
+    var sepStart=sumR+1;
+    rows.push(['','','','','','','','','']);rowHeights[sepStart]=8;
+    rows.push(['','','','','','','','','']);rowHeights[sepStart+1]=8;
+    var kosongList=[];
+    for(var ki=0;ki<prods.length;ki++){var kd=qtyData[store][ki]||{},kt=calcTotal(kd);if(kt===0)kosongList.push(prods[ki]);}
+    var kosongTitleR=sepStart+2;
+    rows.push(['LIST PRODUK KOSONG','','','','','','','','']);
+    merge(kosongTitleR,0,kosongTitleR,8);sty(kosongTitleR,0,st('C0392B','FFFFFF',12,true,'center','center'));rowHeights[kosongTitleR]=22;
+    var kosongHeadR=kosongTitleR+1;
+    rows.push(['NO.','NO BARANG','DESKRIPSI BARANG','','','','','','']);
+    merge(kosongHeadR,2,kosongHeadR,8);
+    sty(kosongHeadR,0,stk(C.SECTION_HEAD,'FFFFFF',10,true,'center'));sty(kosongHeadR,1,stk(C.SECTION_HEAD,'FFFFFF',10,true,'center'));sty(kosongHeadR,2,stk(C.SECTION_HEAD,'FFFFFF',10,true,'left'));rowHeights[kosongHeadR]=18;
+    if(kosongList.length===0){
+      var noK=kosongHeadR+1;rows.push(['','-','Semua produk tersedia (tidak ada yang kosong)','','','','','','']);
+      merge(noK,2,noK,8);sty(noK,0,stk('FFFFFF','888888',10,false,'center'));sty(noK,1,stk('FFFFFF','888888',10,false,'center'));sty(noK,2,st('FFFFFF','888888',10,false,'left','center'));rowHeights[noK]=16;
+    }else{
+      for(var kli=0;kli<kosongList.length;kli++){
+        var klR=kosongHeadR+1+kli,klbg=kli%2===0?C.RED_BG:'FFFFFF';
+        rows.push([kli+1,kosongList[kli].kode,kosongList[kli].desc,'','','','','','']);
+        merge(klR,2,klR,8);sty(klR,0,stk(klbg,C.RED_FG,10,true,'center'));sty(klR,1,stk(klbg,C.RED_FG,9,false,'left'));sty(klR,2,st(klbg,'333333',9,false,'left','center'));rowHeights[klR]=16;
+      }
+    }
+    var sep2Start=(kosongList.length===0?kosongHeadR+2:kosongHeadR+1+kosongList.length);
+    rows.push(['','','','','','','','','']);rowHeights[sep2Start]=8;
+    rows.push(['','','','','','','','','']);rowHeights[sep2Start+1]=8;
+    var menipisList=[];
+    for(var mi2=0;mi2<prods.length;mi2++){var md=qtyData[store][mi2]||{},mt=calcTotal(md);if(mt===1||mt===2)menipisList.push({kode:prods[mi2].kode,desc:prods[mi2].desc,stok:mt});}
+    var menipisTitleR=sep2Start+2;
+    rows.push(['LIST PRODUK HAMPIR HABIS','','','','','','','','']);
+    merge(menipisTitleR,0,menipisTitleR,8);sty(menipisTitleR,0,st('B7770D','FFFFFF',12,true,'center','center'));rowHeights[menipisTitleR]=22;
+    var menipHeadR=menipisTitleR+1;
+    rows.push(['NO.','NO BARANG','DESKRIPSI BARANG','','','','','','SISA']);
+    merge(menipHeadR,2,menipHeadR,7);
+    sty(menipHeadR,0,stk(C.SECTION_HEAD,'FFFFFF',10,true,'center'));sty(menipHeadR,1,stk(C.SECTION_HEAD,'FFFFFF',10,true,'center'));sty(menipHeadR,2,stk(C.SECTION_HEAD,'FFFFFF',10,true,'left'));sty(menipHeadR,8,stk(C.SECTION_HEAD,'FFFFFF',10,true,'center'));rowHeights[menipHeadR]=18;
+    if(menipisList.length===0){
+      var noM=menipHeadR+1;rows.push(['','-','Tidak ada produk hampir habis','','','','','','']);
+      merge(noM,2,noM,8);sty(noM,0,stk('FFFFFF','888888',10,false,'center'));sty(noM,1,stk('FFFFFF','888888',10,false,'center'));sty(noM,2,st('FFFFFF','888888',10,false,'left','center'));rowHeights[noM]=16;
+    }else{
+      for(var mli=0;mli<menipisList.length;mli++){
+        var mlR=menipHeadR+1+mli,mlbg=mli%2===0?C.ORANGE_BG:'FFFFFF';
+        rows.push([mli+1,menipisList[mli].kode,menipisList[mli].desc,'','','','','',menipisList[mli].stok]);
+        merge(mlR,2,mlR,7);sty(mlR,0,stk(mlbg,C.ORANGE_FG,10,true,'center'));sty(mlR,1,stk(mlbg,C.ORANGE_FG,9,false,'left'));sty(mlR,2,st(mlbg,'333333',9,false,'left','center'));sty(mlR,8,stk(mlbg,C.ORANGE_FG,11,true,'center'));rowHeights[mlR]=16;
+      }
+    }
+    var ws=XLSX.utils.aoa_to_sheet(rows);
+    Object.keys(styles).forEach(function(a){if(!ws[a])ws[a]={t:'z',v:''};ws[a].s=styles[a];});
+    ws['!cols']=[{wch:6},{wch:27},{wch:58},{wch:11},{wch:8},{wch:13},{wch:11},{wch:10},{wch:9}];
+    ws['!rows']=[];Object.keys(rowHeights).forEach(function(r){ws['!rows'][parseInt(r)]={hpt:rowHeights[r]};});
+    ws['!merges']=merges;
+    XLSX.utils.book_append_sheet(wb,ws,store);
+  });
+  var tgl2=document.getElementById('tanggal').value||'',fileDateStr='\u2014';
+  if(tgl2){var parts=tgl2.split('-');if(parts.length===3)fileDateStr=parts[2]+'_'+parts[1];}
+  var fileStorePart=storeCode?(storeCode+' '+storeName2):sheetSel;
+  XLSX.writeFile(wb,fileStorePart+' '+fileDateStr+'.xlsx');
+  showToast('\u2705 File Excel berhasil didownload!');
+}
+
+// ================================================================
+// LOCAL STORAGE
+// ================================================================
+var LS_KEY='implora_opname_v1',saveTimer=null;
+function saveToStorage(){
+  try{
+    localStorage.setItem(LS_KEY,JSON.stringify({
+      qtyData:qtyData,
+      storeCode:document.getElementById('storeCode').value,
+      storeName2:document.getElementById('storeName2').value,
+      storeDisplay:document.getElementById('storeDisplay').textContent,
+      tanggal:document.getElementById('tanggal').value,
+      namaBA:document.getElementById('namaBA').value,
+      sheet:document.getElementById('sheetSelect').value
+    }));showSaveBadge();
+  }catch(e){}
+}
+function loadFromStorage(){
+  try{
+    var raw=localStorage.getItem(LS_KEY);if(!raw)return;
+    var p=JSON.parse(raw);
+    if(p.qtyData){if(p.qtyData.AEON)qtyData.AEON=p.qtyData.AEON;if(p.qtyData.WATSONS)qtyData.WATSONS=p.qtyData.WATSONS;}
+    if(p.storeCode)document.getElementById('storeCode').value=p.storeCode;
+    if(p.storeName2)document.getElementById('storeName2').value=p.storeName2;
+    if(p.storeDisplay)document.getElementById('storeDisplay').textContent=p.storeDisplay;
+    if(p.tanggal)document.getElementById('tanggal').value=p.tanggal;
+    if(p.namaBA)document.getElementById('namaBA').value=p.namaBA;
+    if(p.sheet){
+      document.getElementById('sheetSelect').value=p.sheet;currentStore=p.sheet;
+      document.getElementById('tabAEON').className=p.sheet==='AEON'?'tab active':'tab';
+      document.getElementById('tabWATSONS').className=p.sheet==='WATSONS'?'tab active':'tab';
+    }
+  }catch(e){}
+}
+function clearStorage(){try{localStorage.removeItem(LS_KEY);}catch(e){}}
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveToStorage,600);}
+function showSaveBadge(){var b=document.getElementById('saveBadge');b.classList.add('show');setTimeout(function(){b.classList.remove('show');},1800);}
+
+// ================================================================
+// INIT
+// ================================================================
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('tanggal').value=getLocalDateStr();
+  document.getElementById('badgeAEON').textContent=PRODUCTS.aeon.length;
+  document.getElementById('badgeWATSONS').textContent=PRODUCTS.watsons.length;
+  document.getElementById('searchCount').textContent=PRODUCTS.aeon.length+' produk';
+  loadFromStorage();
+  loadLog();
+  loadAudioFromStorage();
+  renderTable();
+  renderStoreList('');
+  updateUndoRedoUI();
+  buildFilterOptList();
+  initVizBars();
+});
+</script>
+</body>
+</html>

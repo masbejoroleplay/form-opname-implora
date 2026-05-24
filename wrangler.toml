@@ -1,0 +1,17 @@
+name = "implora-wa-templates"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# ── D1 Database Bindings ──────────────────────────────────────────
+# Ganti <DATABASE_ID_AEON> dan <DATABASE_ID_WATSONS>
+# dengan ID yang ada di Cloudflare Dashboard → D1
+
+[[d1_databases]]
+binding      = "DB_AEON"
+database_name = "implora-wa-aeon"
+database_id  = "9d7b8b9b-f30e-46cc-ba3d-7e1465efd52f"
+
+[[d1_databases]]
+binding      = "DB_WATSONS"
+database_name = "implora-wa-watsons"
+database_id  = "7f30cc0d-f50e-4e6e-b7e7-a105717d40d6"
