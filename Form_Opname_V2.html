@@ -718,7 +718,8 @@ var CAT_MAP = {
   hair_color_shampoo:['jdhsc-'],
   nail_polish:['nail polish','jdnpl-'],
   sheet_mask:['sheet mask'],
-  peeling_gel:['peeling gel'],
+  peeling_gel_50gr:['g050f8','50gr'],
+  peeling_gel_100gr:['g100h5','100gr'],
   liquid_foundation:['jdbe-2'],
   dawn_eyeshadow_palette:['jdesp-1001'],
   desert_eyeshadow_palette:['jdesp-1002'],
@@ -1522,6 +1523,7 @@ function buildImportPlan(jsonObj,store){
       var entryLabel=ekeys[ei],qty=parseInt(entries[entryLabel])||0;
       if(qty<=0){plan.push({catKey:catKey,entryLabel:entryLabel,qty:qty,skipped:'qty=0'});continue;}
       if(!catProds.length){plan.push({catKey:catKey,entryLabel:entryLabel,qty:qty,skipped:'kategori tidak cocok'});continue;}
+      if(catProds.length===1){plan.push({catKey:catKey,entryLabel:entryLabel,qty:qty,matchedIdx:catProds[0].idx,matchedProd:catProds[0].p,skipped:null});continue;}
       var matched=[];
       for(var mi=0;mi<catProds.length;mi++)if(entryMatchesProduct(entryLabel,catProds[mi].p))matched.push(catProds[mi]);
       if(!matched.length){plan.push({catKey:catKey,entryLabel:entryLabel,qty:qty,skipped:'shade tidak ditemukan'});continue;}
