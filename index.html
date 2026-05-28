@@ -805,7 +805,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:14px">
       <div class="card" style="margin-bottom:0">
         <div class="card-header" style="padding:14px 16px 10px">
           <div class="card-icon" style="background:#fde8e8">&#x1F534;</div>
@@ -5007,15 +5007,20 @@ var _historyRunId=null,_historyDelId=null;
 var _historyCache=[];
 
 // ── Ambil semua history dari D1 ──────────────────────────────────
+var LS_HISTORY_KEY='implora_history_cache_v1';
+function saveHistoryCacheToLS(){try{localStorage.setItem(LS_HISTORY_KEY,JSON.stringify(_historyCache));}catch(e){}}
+function loadHistoryCacheFromLS(){try{var r=localStorage.getItem(LS_HISTORY_KEY);if(r){var d=JSON.parse(r);if(Array.isArray(d)){_historyCache=d;return d;}}}catch(e){}return [];}
 async function getHistoryData(){
   try{
     var res=await fetch(D1_API_URL+'/history');
     if(!res.ok)throw new Error('HTTP '+res.status);
     var data=await res.json();
     _historyCache=data;
+    saveHistoryCacheToLS();
     return data;
   }catch(e){
-    console.warn('D1 fetch failed, menggunakan cache:',e);
+    console.warn('D1 fetch failed, menggunakan localStorage cache:',e);
+    if(_historyCache.length===0)loadHistoryCacheFromLS();
     return _historyCache;
   }
 }
@@ -5101,6 +5106,7 @@ function saveFormOpnameToHistory(){
   };
 
   _historyCache.unshift(snapshot);
+  saveHistoryCacheToLS();
   renderHistoryList();
   showToast('\u23F3 Menyimpan...');
   saveOneHistoryItem(snapshot).then(function(){
@@ -5149,8 +5155,8 @@ function confirmRunHistory(){
   if(!item){showToast('Data tidak ditemukan');closeHistoryRunModal();return;}
 
   // Restore data
-  qtyData.AEON=item.qtyData&&item.qtyData.AEON?item.qtyData.AEON:{};
-  qtyData.WATSONS=item.qtyData&&item.qtyData.WATSONS?item.qtyData.WATSONS:{};
+  qtyData.AEON=item.qtyData&&item.qtyData.AEON?JSON.parse(JSON.stringify(item.qtyData.AEON)):{};
+  qtyData.WATSONS=item.qtyData&&item.qtyData.WATSONS?JSON.parse(JSON.stringify(item.qtyData.WATSONS)):{};
   if(item.storeCode)document.getElementById('storeCode').value=item.storeCode;
   if(item.storeName2)document.getElementById('storeName2').value=item.storeName2;
   if(item.storeDisplay)document.getElementById('storeDisplay').textContent=item.storeDisplay;
@@ -5180,6 +5186,8 @@ function confirmDelOneHistory(){
   if(!_historyDelId){closeHistoryDelOneModal();return;}
   var id=_historyDelId;
   deleteOneHistoryItem(id).then(function(){
+    _historyCache=_historyCache.filter(function(x){return x.id!==id;});
+    saveHistoryCacheToLS();
     closeHistoryDelOneModal();
     renderHistoryList();
     showToast('History dihapus');
@@ -5192,6 +5200,7 @@ function closeHistoryClearAllModal(){document.getElementById('historyClearAllOve
 function confirmClearAllHistory(){
   clearAllHistoryItems().then(function(){
     _historyCache=[];
+    saveHistoryCacheToLS();
     closeHistoryClearAllModal();
     renderHistoryList();
     showToast('Semua history dihapus');
@@ -5245,6 +5254,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('badgeWATSONS').textContent=PRODUCTS.watsons.length;
   document.getElementById('searchCount').textContent=PRODUCTS.aeon.length+' produk';
   loadFromStorage();
+  loadHistoryCacheFromLS();
   loadLog();
   loadAudioFromStorage();
   renderTable();
