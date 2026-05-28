@@ -335,6 +335,21 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 /* audio delete modal */
 .modal-overlay.del-modal .modal-btn.confirm{background:#e74c3c}
 
+/* ===== HISTORY ===== */
+.history-item{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.07);transition:background .12s}
+.history-item:last-child{border-bottom:none}
+.history-item:hover{background:rgba(255,255,255,.04)}
+.history-item-icon{font-size:20px;flex-shrink:0}
+.history-item-info{flex:1;min-width:0}
+.history-item-name{font-size:13px;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-item-meta{font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;margin-top:2px}
+.history-item-btns{display:flex;gap:6px;flex-shrink:0}
+.history-action-btn{width:34px;height:34px;border-radius:9px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
+.history-action-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:white}
+.history-action-btn.run:hover{background:rgba(61,122,94,.25);border-color:#3d7a5e;color:#6fcfa0}
+.history-action-btn.del:hover{background:rgba(200,80,106,.25);border-color:var(--rose);color:#f08090}
+.history-empty{padding:28px 16px;text-align:center;font-size:13px;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace}
+
 /* ===== LOG ACTIVITY ===== */
 .log-page-scroll{flex:1;overflow-y:auto;padding:16px 14px 30px}
 .log-card{background:var(--ink);border-radius:14px;overflow:hidden;margin-bottom:14px}
@@ -406,6 +421,10 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
     <div class="nav-section-label">Price list</div>
     <button class="nav-item" onclick="closeNavDrawer();showSidebarPage('formattingwa')"><span class="nav-item-icon">&#x1F4F1;</span> Formatting WA</button>
     <button class="nav-item" onclick="closeNavDrawer();showSidebarPage('managelistharga')"><span class="nav-item-icon">&#x1F4CB;</span> Manage List Harga</button>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">Tools</div>
+    <button class="nav-item" onclick="closeNavDrawer();showSidebarPage('inputreport')"><span class="nav-item-icon">&#x1F4CA;</span> Input Report</button>
+    <button class="nav-item" onclick="closeNavDrawer();showSidebarPage('history')"><span class="nav-item-icon">&#x1F4DC;</span> History</button>
     <div class="nav-divider"></div>
     <div class="nav-section-label">Others</div>
     <button class="nav-item" onclick="closeNavDrawer();refreshPage()"><span class="nav-item-icon">&#x1F504;</span> Refresh Halaman</button>
@@ -522,7 +541,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
   </div>
   <div style="display:flex;align-items:center;gap:8px">
     <button class="btn-back-bar" id="btnBackBar" style="display:none" onclick="handleBottomBack()">&#8592;</button>
-    <button class="btn-export" onclick="exportExcel()">&#11015;&#65039; Export Excel</button>
+    <button class="btn-export" onclick="openExportModal()">&#11015;&#65039; Export Excel</button>
   </div>
 </div>
 
@@ -535,6 +554,19 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
     <div class="modal-btns">
       <button class="modal-btn cancel" onclick="closeResetModal()">Tidak</button>
       <button class="modal-btn confirm" onclick="confirmReset()">Ya, Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT EXCEL CONFIRM MODAL -->
+<div class="modal-overlay" id="exportOverlay" onclick="closeExportModalOnBg(event)">
+  <div class="modal">
+    <div class="modal-icon">&#x1F4CA;</div>
+    <div class="modal-title">Yakin Export Excel?</div>
+    <div class="modal-desc">File Excel Form Opname akan didownload ke perangkat Anda.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeExportModal()">Tidak</button>
+      <button class="modal-btn primary" onclick="confirmExportExcel()">Ya, Export</button>
     </div>
   </div>
 </div>
@@ -733,6 +765,166 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 <div class="full-page embedded-page" id="pageFormattingWA"><div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div><iframe class="embedded-frame" id="frameFormattingWA" title="Formatting WA"></iframe></div>
 <div class="full-page embedded-page" id="pageManageListHarga"><div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div><iframe class="embedded-frame" id="frameManageListHarga" title="Manage List Harga"></iframe></div>
 
+<!-- INPUT REPORT PAGE -->
+<div class="full-page" id="pageInputReport">
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-scroll" id="inputReportContent">
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header">
+        <div class="card-icon">&#x1F4CA;</div>
+        <div style="flex:1"><div class="card-title">Input Report Stock</div><div class="card-desc">Isi data dan generate laporan WA otomatis</div></div>
+        <button onclick="openClearIRModal()" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--mist);color:#e74c3c;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap">&#x1F9F9; Clear</button>
+      </div>
+      <div class="card-body">
+        <div class="info-grid">
+          <div>
+            <label class="field-label">Sheet Store</label>
+            <select class="field-select" id="irSheetStore" onchange="onIRSheetChange()">
+              <option value="AEON">AEON</option>
+              <option value="WATSONS">WATSONS</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Tanggal Opname</label>
+            <input type="date" class="field-input" id="irTanggal" oninput="saveInputReportToStorage();generateInputReport()">
+          </div>
+          <div>
+            <label class="field-label">Nama Toko</label>
+            <div class="store-picker" id="irStorePicker">
+              <button type="button" class="store-display" id="irStoreDisplay" onclick="toggleIRStoreDD()">Pilih toko...</button>
+              <span class="store-arrow">&#9662;</span>
+              <div class="store-dropdown" id="irStoreDD">
+                <div class="store-search-wrap"><input type="text" class="store-search" id="irStoreSearch" placeholder="Cari kode atau nama toko..." oninput="renderIRStoreList(this.value)"></div>
+                <div class="store-list" id="irStoreList"></div>
+              </div>
+            </div>
+            <input type="hidden" id="irStoreCode" value="">
+            <input type="hidden" id="irStoreName" value="">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-header" style="padding:14px 16px 10px">
+          <div class="card-icon" style="background:#fde8e8">&#x1F534;</div>
+          <div style="flex:1"><div class="card-title" style="font-size:13px">Stock Kosong</div><div class="card-desc">1 produk per baris</div></div>
+          <button onclick="pasteToIRField('irKosongInput')" style="padding:5px 10px;border-radius:7px;border:1.5px solid var(--border);background:var(--mist);color:var(--ink-soft);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap" title="Paste dari clipboard">&#x1F4CB; Paste</button>
+        </div>
+        <div class="card-body" style="padding:12px 14px">
+          <textarea id="irKosongInput" class="field-input" style="min-height:220px;resize:vertical;font-size:13px;line-height:1.6;font-family:'DM Mono',monospace" placeholder="Ketik nama produk&#10;1 produk per baris..." oninput="saveInputReportToStorage();generateInputReport()"></textarea>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-header" style="padding:14px 16px 10px">
+          <div class="card-icon" style="background:#fff3e0">&#x1F7E0;</div>
+          <div style="flex:1"><div class="card-title" style="font-size:13px">Stock Menipis</div><div class="card-desc">1 produk per baris</div></div>
+          <button onclick="pasteToIRField('irMenipisInput')" style="padding:5px 10px;border-radius:7px;border:1.5px solid var(--border);background:var(--mist);color:var(--ink-soft);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap" title="Paste dari clipboard">&#x1F4CB; Paste</button>
+        </div>
+        <div class="card-body" style="padding:12px 14px">
+          <textarea id="irMenipisInput" class="field-input" style="min-height:220px;resize:vertical;font-size:13px;line-height:1.6;font-family:'DM Mono',monospace" placeholder="Ketik nama produk&#10;1 produk per baris..." oninput="saveInputReportToStorage();generateInputReport()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--ink);border-radius:14px;overflow:hidden;margin-bottom:14px">
+      <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.5)">&#x1F4AC; Hasil Report WA</span>
+        <button id="irCopyBtn" onclick="copyInputReport()" style="padding:6px 14px;border-radius:20px;border:none;background:#25D366;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s">&#x1F4CB; Copy</button>
+      </div>
+      <textarea id="irResultTextarea" readonly style="width:100%;padding:14px 16px;border:none;outline:none;resize:none;font-family:'DM Mono',monospace;font-size:13px;line-height:1.6;background:#0d0810;color:#e8d5b0;min-height:200px;border-radius:0" placeholder="Hasil laporan WA akan muncul otomatis di sini..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY PAGE -->
+<div class="full-page" id="pageHistory">
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-scroll" id="historyContent">
+    <div class="log-card" style="margin-bottom:14px">
+      <div class="log-card-header" style="flex-wrap:wrap;gap:8px">
+        <span class="log-card-title">&#x1F4DC; History Form Opname</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <button class="log-hbtn green" onclick="openSaveFormOpnameModal()">&#x1F4BE; Save Form Opname</button>
+          <button class="log-hbtn danger" onclick="openHistoryClearAllModal()">&#x1F5D1; Hapus Semua</button>
+        </div>
+      </div>
+      <div style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.15)">
+        <div style="position:relative">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;z-index:1">&#x1F50D;</span>
+          <input type="text" id="historySearchInput" class="search-input" style="padding-left:36px;background:#1a111840;border-color:rgba(255,255,255,.12);color:white;font-size:14px" placeholder="Cari nama toko..." oninput="renderHistoryList()">
+        </div>
+      </div>
+      <div id="historyList" style="min-height:80px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- INPUT REPORT: Konfirmasi Clear Data -->
+<div class="modal-overlay" id="clearIROverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x1F9F9;</div>
+    <div class="modal-title">Yakin Hapus Semua Data?</div>
+    <div class="modal-desc">Seluruh data Input Report (toko, tanggal, stock kosong, stock menipis) akan dihapus.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeClearIRModal()">Tidak</button>
+      <button class="modal-btn confirm" onclick="clearInputReportData()">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY: Konfirmasi Save Form Opname -->
+<div class="modal-overlay" id="saveFormOpnameOverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x1F4BE;</div>
+    <div class="modal-title">Yakin Save Form Opname?</div>
+    <div class="modal-desc">Data Form Opname saat ini akan disimpan ke History.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeSaveFormOpnameModal()">Tidak</button>
+      <button class="modal-btn primary" onclick="confirmSaveFormOpname()">Ya, Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY: Konfirmasi Jalankan -->
+<div class="modal-overlay" id="historyRunOverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x25B6;&#xFE0F;</div>
+    <div class="modal-title">Yakin Jalankan Memory?</div>
+    <div class="modal-desc">Data Form Opname yang sekarang akan hilang dan digantikan oleh data yang dipilih.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeHistoryRunModal()">Tidak</button>
+      <button class="modal-btn primary" onclick="confirmRunHistory()">Ya, Jalankan</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY: Konfirmasi Hapus satu -->
+<div class="modal-overlay" id="historyDelOneOverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x1F5D1;&#xFE0F;</div>
+    <div class="modal-title">Yakin Hapus?</div>
+    <div class="modal-desc" id="historyDelOneDesc">Item ini akan dihapus permanen.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeHistoryDelOneModal()">Tidak</button>
+      <button class="modal-btn confirm" onclick="confirmDelOneHistory()">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY: Konfirmasi Hapus Semua -->
+<div class="modal-overlay" id="historyClearAllOverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x26A0;&#xFE0F;</div>
+    <div class="modal-title">Yakin Hapus Semua?</div>
+    <div class="modal-desc">Seluruh history Form Opname akan dihapus permanen.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeHistoryClearAllModal()">Tidak</button>
+      <button class="modal-btn confirm" onclick="confirmClearAllHistory()">Ya, Hapus Semua</button>
+    </div>
+  </div>
+</div>
 <template id="tplToolsImplora">
 <!DOCTYPE html>
 <html lang="id">
@@ -2246,6 +2438,38 @@ function toast(msg) {
   el.textContent = msg; el.classList.add('show');
   toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
 }
+
+/* ═══════════════════════════════════════════
+   LOCAL STORAGE — Audio Trimmer & Connector
+═══════════════════════════════════════════ */
+const LS_TOOLS_KEY = 'implora_audiotools_v1';
+
+function saveToolsPrefs() {
+  try {
+    const trimName = document.getElementById('file-name-input') ? document.getElementById('file-name-input').value : '';
+    const connName = document.getElementById('conn-name-input') ? document.getElementById('conn-name-input').value : '';
+    localStorage.setItem(LS_TOOLS_KEY, JSON.stringify({ trimName, connName }));
+  } catch(e) {}
+}
+
+function loadToolsPrefs() {
+  try {
+    const raw = localStorage.getItem(LS_TOOLS_KEY);
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    if (p.trimName) { const el = document.getElementById('file-name-input'); if (el && !el.value) el.value = p.trimName; }
+    if (p.connName) { const el = document.getElementById('conn-name-input'); if (el && !el.value) el.value = p.connName; }
+  } catch(e) {}
+}
+
+// Auto-save prefs when filename changes
+document.addEventListener('DOMContentLoaded', function() {
+  loadToolsPrefs();
+  ['file-name-input','conn-name-input'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', saveToolsPrefs);
+  });
+});
 </script>
 </body>
 </html>
@@ -3646,6 +3870,8 @@ function fetchWATemplateFromDB(store) {
       // Sync ke localStorage sebagai fallback offline
       try { localStorage.setItem(WA_STORAGE_KEY, JSON.stringify(_waTemplateCache)); } catch(e) {}
       // Jika WA page sedang terbuka, update tampilan langsung
+      // Jika Input Report aktif, refresh juga hasilnya
+      if(_activePage==='inputreport'){try{generateInputReport();}catch(e){}}
       if (_activePage === 'wa') {
         var dispEl = document.getElementById('waKunjunganDisplay');
         var taEl   = document.getElementById('waKunjungan');
@@ -3660,6 +3886,8 @@ function fetchWATemplateFromDB(store) {
 function saveWATemplates(t) {
   _waTemplateCache = t;
   try { localStorage.setItem(WA_STORAGE_KEY, JSON.stringify(t)); } catch(e) {}
+  // Jika halaman Input Report sedang terbuka, refresh hasil WA-nya
+  if(_activePage==='inputreport'){try{generateInputReport();}catch(e){}}
   // Tentukan store dari key yang berubah
   var stores = [];
   if (t.aeon_kunjungan !== undefined)    stores.push('AEON');
@@ -4035,7 +4263,7 @@ function showToast(msg){var t=document.getElementById('toast');t.textContent=msg
 // ================================================================
 // SIDEBAR / PAGES
 // ================================================================
-var PAGE_IDS={listproduk:'pageListProduk',totalsearch:'pageTotalSearch',importjson:'pageImportJSON',logactivity:'pageLogActivity',audiorecord:'pageAudioRecord',audiotrimmer:'pageAudioTrimmer',audioconnector:'pageAudioConnector',formattingwa:'pageFormattingWA',managelistharga:'pageManageListHarga'};
+var PAGE_IDS={listproduk:'pageListProduk',totalsearch:'pageTotalSearch',importjson:'pageImportJSON',logactivity:'pageLogActivity',audiorecord:'pageAudioRecord',audiotrimmer:'pageAudioTrimmer',audioconnector:'pageAudioConnector',formattingwa:'pageFormattingWA',managelistharga:'pageManageListHarga',inputreport:'pageInputReport',history:'pageHistory'};
 var EMBED_PAGE_CONFIG={
   audiotrimmer:{frameId:'frameAudioTrimmer',dataId:'embedToolsImplora',tabIndex:0},
   audioconnector:{frameId:'frameAudioConnector',dataId:'embedToolsImplora',tabIndex:1},
@@ -4094,6 +4322,8 @@ function showSidebarPage(page){
   }
   if(page==='importjson')updateUndoRedoUI();
   if(page==='logactivity')renderLogPage();
+  if(page==='inputreport')initInputReport();
+  if(page==='history')renderHistoryList();
   if(page==='audiorecord'){
     renderAudioList();
     if(_isRecording){
@@ -4483,10 +4713,29 @@ function confirmReset(){
   _audioRecordings=[];
   _activityLog=[];
   clearStorage();
+  try{localStorage.removeItem(LS_IR_KEY);}catch(e){}
+  // Reset Input Report fields
+  try{
+    var irTgl=document.getElementById('irTanggal');if(irTgl)irTgl.value=getLocalDateStr();
+    var irKosong=document.getElementById('irKosongInput');if(irKosong)irKosong.value='';
+    var irMenipis=document.getElementById('irMenipisInput');if(irMenipis)irMenipis.value='';
+    var irStoreCode=document.getElementById('irStoreCode');if(irStoreCode)irStoreCode.value='';
+    var irStoreName=document.getElementById('irStoreName');if(irStoreName)irStoreName.value='';
+    var irStoreDisplay=document.getElementById('irStoreDisplay');if(irStoreDisplay)irStoreDisplay.textContent='Pilih toko...';
+    var irResult=document.getElementById('irResultTextarea');if(irResult)irResult.value='';
+  }catch(e){}
   saveAudioToStorage();
   saveLog();
   closeResetModal();renderTable();showToast('\u2705 Semua data berhasil direset');
 }
+
+// ================================================================
+// EXCEL EXPORT MODAL
+// ================================================================
+function openExportModal(){document.getElementById('exportOverlay').classList.add('open');}
+function closeExportModal(){document.getElementById('exportOverlay').classList.remove('open');}
+function closeExportModalOnBg(e){if(e.target===document.getElementById('exportOverlay'))closeExportModal();}
+function confirmExportExcel(){closeExportModal();exportExcel();}
 
 // ================================================================
 // EXCEL EXPORT
@@ -4587,6 +4836,366 @@ function exportExcel(){
   var fileStorePart=storeCode?(storeCode+' '+storeName2):sheetSel;
   XLSX.writeFile(wb,fileStorePart+' '+fileDateStr+'.xlsx');
   showToast('\u2705 File Excel berhasil didownload!');
+}
+
+// ================================================================
+// INPUT REPORT
+// ================================================================
+var LS_IR_KEY='implora_inputreport_v1';
+
+// ── IR Store Dropdown (same logic as main store picker) ───────────
+var _irDDOpen=false;
+function toggleIRStoreDD(){_irDDOpen?closeIRStoreDD():openIRStoreDD();}
+function openIRStoreDD(){
+  _irDDOpen=true;
+  var dd=document.getElementById('irStoreDD'),btn=document.getElementById('irStoreDisplay');
+  var rect=btn.getBoundingClientRect();
+  dd.style.top=(rect.bottom+4)+'px';
+  dd.style.left=rect.left+'px';
+  dd.style.width=Math.max(rect.width,300)+'px';
+  dd.classList.add('open');
+  var s=document.getElementById('irStoreSearch');
+  s.value='';renderIRStoreList('');
+  setTimeout(function(){s.focus();},60);
+}
+function closeIRStoreDD(){_irDDOpen=false;document.getElementById('irStoreDD').classList.remove('open');}
+function renderIRStoreList(q){
+  var query=(q||'').toLowerCase().trim();
+  var filtered=query?STORE_DB.filter(function(s){return s.code.toLowerCase().indexOf(query)>=0||s.name.toLowerCase().indexOf(query)>=0;}):STORE_DB;
+  var list=document.getElementById('irStoreList');
+  if(!filtered.length){list.innerHTML='<div class="store-empty">Toko tidak ditemukan</div>';return;}
+  var html='';
+  for(var i=0;i<filtered.length;i++){
+    var s=filtered[i];
+    html+='<div class="store-opt" onmousedown="pickIRStore(\''+s.code+'\',\''+s.name.replace(/'/g,"\\'")+'\')">'
+        +'<span class="store-code">'+s.code+'</span><span class="store-name">'+s.name+'</span></div>';
+  }
+  list.innerHTML=html;
+}
+function pickIRStore(code,name){
+  document.getElementById('irStoreCode').value=code;
+  document.getElementById('irStoreName').value=name;
+  document.getElementById('irStoreDisplay').textContent=code+' \u2014 '+name;
+  closeIRStoreDD();
+  saveInputReportToStorage();
+  generateInputReport();
+}
+document.addEventListener('click',function(e){
+  if(_irDDOpen&&!e.target.closest('#irStorePicker')&&!e.target.closest('#irStoreDD'))closeIRStoreDD();
+});
+window.addEventListener('scroll',function(){if(_irDDOpen)openIRStoreDD();},true);
+
+// ── Sheet change ──────────────────────────────────────────────────
+function onIRSheetChange(){
+  saveInputReportToStorage();
+  generateInputReport();
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+function initInputReport(){
+  var irTgl=document.getElementById('irTanggal');
+  if(irTgl&&!irTgl.value)irTgl.value=getLocalDateStr();
+  loadInputReportFromStorage();
+  renderIRStoreList('');
+  generateInputReport();
+}
+
+// ── Storage ───────────────────────────────────────────────────────
+function saveInputReportToStorage(){
+  try{
+    localStorage.setItem(LS_IR_KEY,JSON.stringify({
+      sheet:document.getElementById('irSheetStore').value,
+      tanggal:document.getElementById('irTanggal').value,
+      storeCode:document.getElementById('irStoreCode').value,
+      storeName:document.getElementById('irStoreName').value,
+      storeDisplay:document.getElementById('irStoreDisplay').textContent,
+      kosong:document.getElementById('irKosongInput').value,
+      menipis:document.getElementById('irMenipisInput').value
+    }));
+  }catch(e){}
+}
+
+function loadInputReportFromStorage(){
+  try{
+    var raw=localStorage.getItem(LS_IR_KEY);if(!raw)return;
+    var p=JSON.parse(raw);
+    if(p.sheet){var sel=document.getElementById('irSheetStore');if(sel)sel.value=p.sheet;}
+    if(p.tanggal){var tEl=document.getElementById('irTanggal');if(tEl)tEl.value=p.tanggal;}
+    if(p.storeCode)document.getElementById('irStoreCode').value=p.storeCode;
+    if(p.storeName)document.getElementById('irStoreName').value=p.storeName;
+    if(p.storeDisplay)document.getElementById('irStoreDisplay').textContent=p.storeDisplay;
+    if(p.kosong)document.getElementById('irKosongInput').value=p.kosong;
+    if(p.menipis)document.getElementById('irMenipisInput').value=p.menipis;
+  }catch(e){}
+}
+
+// ── Generate ──────────────────────────────────────────────────────
+function generateInputReport(){
+  var sheet=document.getElementById('irSheetStore').value||'AEON';
+  var tgl=document.getElementById('irTanggal').value||'';
+  var storeCode=document.getElementById('irStoreCode').value||'';
+  var storeName=document.getElementById('irStoreName').value||'';
+  var tglShort='';
+  if(tgl){var tp=tgl.split('-');tglShort=tp[2]+'/'+tp[1]+'/'+tp[0];}
+
+  // Header — logika sama persis dengan openWAReport / copyWAReport
+  var headerLine='';
+  if(sheet==='WATSONS'){
+    headerLine=storeCode?('Watsons '+storeCode+' '+storeName):'Watsons';
+  }else{
+    // AEON: tampilkan "AEON" di depan nama toko
+    headerLine=storeName?('AEON '+storeName):'Aeon';
+  }
+  if(tglShort)headerLine+='\n'+tglShort;
+
+  // Hasil Kunjungan — langsung ambil dari WA templates, sesuai sheet yang dipilih
+  var tmpl=loadWATemplates();
+  var kunjKey=sheet==='AEON'?'aeon_kunjungan':'watsons_kunjungan';
+  var kunjText=(tmpl[kunjKey]||'').replace(/^\* /gm,'- ');
+
+  // Parse kosong & menipis
+  var kosongLines=(document.getElementById('irKosongInput').value||'').split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
+  var menipisLines=(document.getElementById('irMenipisInput').value||'').split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
+  var kosongBlock=kosongLines.length?kosongLines.map(function(n,i){return(i+1)+'. '+n;}).join('\n'):'-';
+  var menipisBlock=menipisLines.length?menipisLines.map(function(n,i){return(i+1)+'. '+n;}).join('\n'):'-';
+
+  var result=headerLine+'\n\n*Hasil Kunjungan:*\n'+kunjText+'\n\n*Stock Kosong:*\n'+kosongBlock+'\n\n*Stock Menipis:*\n'+menipisBlock;
+  var ta=document.getElementById('irResultTextarea');
+  ta.value=result;
+  ta.style.height='auto';
+  ta.style.height=ta.scrollHeight+'px';
+}
+
+function copyInputReport(){
+  var text=document.getElementById('irResultTextarea').value;
+  if(!text){showToast('Tidak ada laporan untuk di-copy');return;}
+  copyToClipboard(text);
+  var btn=document.getElementById('irCopyBtn');
+  if(btn){btn.textContent='\u2705 Tersalin!';btn.style.background='#555';setTimeout(function(){btn.textContent='\uD83D\uDCCB Copy';btn.style.background='#25D366';},2000);}
+}
+
+function openClearIRModal(){document.getElementById('clearIROverlay').classList.add('open');}
+function closeClearIRModal(){document.getElementById('clearIROverlay').classList.remove('open');}
+
+function clearInputReportData(){
+  closeClearIRModal();
+  var fields=['irSheetStore','irTanggal','irStoreCode','irStoreName','irKosongInput','irMenipisInput','irResultTextarea'];
+  fields.forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  var disp=document.getElementById('irStoreDisplay');if(disp)disp.textContent='Pilih toko...';
+  try{localStorage.removeItem('implora_inputreport_v1');}catch(e){}
+  showToast('\uD83E\uDDF9 Data Input Report dihapus');
+}
+
+function pasteToIRField(fieldId){
+  if(!navigator.clipboard){showToast('\u26A0\uFE0F Clipboard tidak didukung browser ini');return;}
+  navigator.clipboard.readText().then(function(text){
+    var el=document.getElementById(fieldId);
+    if(!el)return;
+    var start=el.selectionStart,end=el.selectionEnd,val=el.value;
+    el.value=val.substring(0,start)+text+val.substring(end);
+    el.selectionStart=el.selectionEnd=start+text.length;
+    el.dispatchEvent(new Event('input'));
+    showToast('\u2705 Paste berhasil');
+  }).catch(function(){showToast('\u26A0\uFE0F Gagal baca clipboard');});
+}
+
+// ================================================================
+// HISTORY FORM OPNAME — Cloudflare D1
+// ================================================================
+var D1_API_URL='https://implora-history-api.masbejoroleplay.workers.dev';
+var _historyRunId=null,_historyDelId=null;
+var _historyCache=[];
+
+// ── Ambil semua history dari D1 ──────────────────────────────────
+async function getHistoryData(){
+  try{
+    var res=await fetch(D1_API_URL+'/history');
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    var data=await res.json();
+    _historyCache=data;
+    return data;
+  }catch(e){
+    console.warn('D1 fetch failed, menggunakan cache:',e);
+    return _historyCache;
+  }
+}
+
+// ── Simpan 1 item baru ke D1 (efisien) ──────────────────────────
+async function saveOneHistoryItem(snapshot){
+  try{
+    var res=await fetch(D1_API_URL+'/history',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(snapshot)
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+  }catch(e){showToast('\u26A0\uFE0F Gagal menyimpan ke server: '+e.message);}
+}
+
+// ── Hapus satu item dari D1 ───────────────────────────────────────
+async function deleteOneHistoryItem(id){
+  try{
+    await fetch(D1_API_URL+'/history/'+id,{method:'DELETE'});
+  }catch(e){showToast('\u26A0\uFE0F Gagal hapus dari server');}
+}
+
+// ── Hapus semua dari D1 ──────────────────────────────────────────
+async function clearAllHistoryItems(){
+  try{
+    await fetch(D1_API_URL+'/history',{method:'DELETE'});
+  }catch(e){showToast('\u26A0\uFE0F Gagal hapus dari server');}
+}
+
+function buildHistoryName(){
+  var storeCode=document.getElementById('storeCode').value||'';
+  var storeName2=document.getElementById('storeName2').value||'';
+  var tgl=document.getElementById('tanggal').value||'';
+  var nameToko=storeCode?(storeCode+' '+storeName2):(storeName2||'Toko');
+  var tglShort='';
+  if(tgl){var p=tgl.split('-');tglShort=p[2]+'_'+p[1];}
+  return nameToko+(tglShort?' '+tglShort:'');
+}
+
+// ── Save Form Opname Modal ────────────────────────────────────────
+function openSaveFormOpnameModal(){document.getElementById('saveFormOpnameOverlay').classList.add('open');}
+function closeSaveFormOpnameModal(){document.getElementById('saveFormOpnameOverlay').classList.remove('open');}
+function confirmSaveFormOpname(){closeSaveFormOpnameModal();saveFormOpnameToHistory();}
+
+function saveFormOpnameToHistory(){
+  var storeCode=document.getElementById('storeCode').value||'';
+  var storeName2=document.getElementById('storeName2').value||'';
+  var tgl=document.getElementById('tanggal').value||'';
+  var namaBA=document.getElementById('namaBA').value||'';
+  var sheet=document.getElementById('sheetSelect').value;
+  var storeDisplay=document.getElementById('storeDisplay').textContent;
+
+  // Check ada data atau tidak
+  var hasData=false;
+  var allKeys=['AEON','WATSONS'];
+  for(var s=0;s<allKeys.length;s++){
+    var storeKey=allKeys[s];
+    if(qtyData[storeKey]){
+      var idxs=Object.keys(qtyData[storeKey]);
+      for(var k=0;k<idxs.length;k++){
+        var d=qtyData[storeKey][idxs[k]];
+        if(d&&(parseInt(d.bw)||parseInt(d.la)||parseInt(d.rr)||parseInt(d.rp)||parseInt(d.gu))){hasData=true;break;}
+      }
+    }
+    if(hasData)break;
+  }
+
+  var name=buildHistoryName();
+  var ts=new Date().toISOString();
+  var id=Date.now();
+
+  var snapshot={
+    id:id,
+    name:name,
+    ts:ts,
+    sheet:sheet,
+    storeCode:storeCode,
+    storeName2:storeName2,
+    storeDisplay:storeDisplay,
+    tanggal:tgl,
+    namaBA:namaBA,
+    qtyData:{AEON:JSON.parse(JSON.stringify(qtyData.AEON||{})),WATSONS:JSON.parse(JSON.stringify(qtyData.WATSONS||{}))}
+  };
+
+  _historyCache.unshift(snapshot);
+  renderHistoryList();
+  showToast('\u23F3 Menyimpan...');
+  saveOneHistoryItem(snapshot).then(function(){
+    showToast('\u2705 Tersimpan: '+name);
+  });
+}
+
+async function renderHistoryList(){
+  var list=document.getElementById('historyList');
+  if(!list)return;
+  list.innerHTML='<div class="history-empty" style="color:rgba(255,255,255,.4);padding:20px;text-align:center;font-size:13px">\u23F3 Memuat dari server...</div>';
+  var q=(document.getElementById('historySearchInput')?document.getElementById('historySearchInput').value:'').toLowerCase().trim();
+  var data=await getHistoryData();
+  var filtered=q?data.filter(function(d){return d.name.toLowerCase().indexOf(q)>=0;}):data;
+  if(!filtered.length){
+    list.innerHTML='<div class="history-empty">'+(q?'Tidak ada hasil untuk "'+escHTML(q)+'"':'Belum ada history. Klik "Save Form Opname" untuk menyimpan.')+'</div>';
+    return;
+  }
+  var html='';
+  for(var i=0;i<filtered.length;i++){
+    var item=filtered[i];
+    var dt=new Date(item.ts);
+    var dtStr=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+    html+='<div class="history-item">'+
+      '<div class="history-item-icon">&#x1F4CB;</div>'+
+      '<div class="history-item-info">'+
+        '<div class="history-item-name">'+escHTML(item.name)+'</div>'+
+        '<div class="history-item-meta">'+item.sheet+' &bull; '+dtStr+'</div>'+
+      '</div>'+
+      '<div class="history-item-btns">'+
+        '<button class="history-action-btn run" title="Jalankan" onclick="openHistoryRunModal('+item.id+')">&#x25B6;</button>'+
+        '<button class="history-action-btn del" title="Hapus" onclick="openHistoryDelOneModal('+item.id+',\''+escAttr(item.name)+'\')">&#x1F5D1;</button>'+
+      '</div>'+
+    '</div>';
+  }
+  list.innerHTML=html;
+}
+
+// ── Run Modal ────────────────────────────────────────────────────
+function openHistoryRunModal(id){_historyRunId=id;document.getElementById('historyRunOverlay').classList.add('open');}
+function closeHistoryRunModal(){_historyRunId=null;document.getElementById('historyRunOverlay').classList.remove('open');}
+function confirmRunHistory(){
+  if(!_historyRunId){closeHistoryRunModal();return;}
+  var data=_historyCache;
+  var item=null;for(var i=0;i<data.length;i++){if(data[i].id===_historyRunId){item=data[i];break;}}
+  if(!item){showToast('Data tidak ditemukan');closeHistoryRunModal();return;}
+
+  // Restore data
+  qtyData.AEON=item.qtyData&&item.qtyData.AEON?item.qtyData.AEON:{};
+  qtyData.WATSONS=item.qtyData&&item.qtyData.WATSONS?item.qtyData.WATSONS:{};
+  if(item.storeCode)document.getElementById('storeCode').value=item.storeCode;
+  if(item.storeName2)document.getElementById('storeName2').value=item.storeName2;
+  if(item.storeDisplay)document.getElementById('storeDisplay').textContent=item.storeDisplay;
+  if(item.tanggal)document.getElementById('tanggal').value=item.tanggal;
+  if(item.namaBA)document.getElementById('namaBA').value=item.namaBA;
+  if(item.sheet){
+    document.getElementById('sheetSelect').value=item.sheet;currentStore=item.sheet;
+    document.getElementById('tabAEON').className=item.sheet==='AEON'?'tab active':'tab';
+    document.getElementById('tabWATSONS').className=item.sheet==='WATSONS'?'tab active':'tab';
+  }
+  saveToStorage();
+  renderTable();
+  closeHistoryRunModal();
+  // Kembali ke home
+  closeSidebarPage('history');
+  showToast('\u2705 Data "'+item.name+'" berhasil dimuat!');
+}
+
+// ── Del One Modal ────────────────────────────────────────────────
+function openHistoryDelOneModal(id,name){
+  _historyDelId=id;
+  document.getElementById('historyDelOneDesc').textContent='"'+name+'" akan dihapus permanen.';
+  document.getElementById('historyDelOneOverlay').classList.add('open');
+}
+function closeHistoryDelOneModal(){_historyDelId=null;document.getElementById('historyDelOneOverlay').classList.remove('open');}
+function confirmDelOneHistory(){
+  if(!_historyDelId){closeHistoryDelOneModal();return;}
+  var id=_historyDelId;
+  deleteOneHistoryItem(id).then(function(){
+    closeHistoryDelOneModal();
+    renderHistoryList();
+    showToast('History dihapus');
+  });
+}
+
+// ── Clear All Modal ──────────────────────────────────────────────
+function openHistoryClearAllModal(){document.getElementById('historyClearAllOverlay').classList.add('open');}
+function closeHistoryClearAllModal(){document.getElementById('historyClearAllOverlay').classList.remove('open');}
+function confirmClearAllHistory(){
+  clearAllHistoryItems().then(function(){
+    _historyCache=[];
+    closeHistoryClearAllModal();
+    renderHistoryList();
+    showToast('Semua history dihapus');
+  });
 }
 
 // ================================================================
