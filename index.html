@@ -5117,9 +5117,9 @@ function saveFormOpnameToHistory(){
 
   _historyCache.unshift(snapshot);
   saveHistoryCacheToLS();
-  renderHistoryList();
   showToast('\u23F3 Menyimpan...');
   saveOneHistoryItem(snapshot).then(function(){
+    renderHistoryList();
     showToast('\u2705 Tersimpan: '+name);
   });
 }
