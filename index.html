@@ -846,14 +846,22 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
       <div class="log-card-header" style="flex-wrap:wrap;gap:8px">
         <span class="log-card-title">&#x1F4DC; History Form Opname</span>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <button class="log-hbtn green" onclick="openSaveFormOpnameModal()">&#x1F4BE; Save Form Opname</button>
           <button class="log-hbtn danger" onclick="openHistoryClearAllModal()">&#x1F5D1; Hapus Semua</button>
         </div>
       </div>
-      <div style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.15)">
-        <div style="position:relative">
-          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;z-index:1">&#x1F50D;</span>
-          <input type="text" id="historySearchInput" class="search-input" style="padding-left:36px;background:#1a111840;border-color:rgba(255,255,255,.12);color:white;font-size:14px" placeholder="Cari nama toko..." oninput="renderHistoryList()">
+      <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.15)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;display:block;font-family:'DM Mono',monospace">Cari Nama Toko</label>
+            <input type="text" id="historySearchInput" class="search-input" style="background:#1a111840;border-color:rgba(255,255,255,.12);color:white;font-size:13px;padding:8px 12px" placeholder="Nama toko..." oninput="renderHistoryList()">
+          </div>
+          <div>
+            <label style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;display:block;font-family:'DM Mono',monospace">Tanggal Opname</label>
+            <div style="position:relative">
+              <input type="date" id="historyFilterDate" style="width:100%;padding:8px 12px 8px 12px;border:1.5px solid rgba(255,255,255,.12);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:white;background:#1a111840;outline:none;transition:border-color .2s,box-shadow .2s;cursor:pointer" oninput="renderHistoryList()">
+              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;color:rgba(255,255,255,.6)">📅</span>
+            </div>
+          </div>
         </div>
       </div>
       <div id="historyList" style="min-height:80px"></div>
@@ -4005,7 +4013,7 @@ var STORE_DB=[
   {code:'GGP',name:'Grand Galaxy Park'},{code:'PPG',name:'Plaza Pondok Gede'},{code:'BUP',name:'Buaran Plaza'},
   {code:'CCM',name:'Cibinong City Mall'},{code:'ELB',name:'Eka Lokasari Bogor'},{code:'BTM',name:'Bogor Trade Mall'},
   {code:'CMD',name:'Cinere Mall Depok'},{code:'DMD',name:'Mall Depok'},{code:'MCR',name:'Margo City Reborn'},
-  {code:'TCB',name:'Trans Studio Cibubur'},{code:'LSS',name:'Lokasari Square'},{code:'MDM',name:'Mall Daan Mogot'},
+  {code:'TCB',name:'Trans Studio Cibubur'},{code:'LSS',name:'Lokasari Square'},
   {code:'MJT',name:'Menara Jakarta'},{code:'SKR',name:'Mall Karawaci Reborn'},{code:'LWM',name:'Living World'},
   {code:'1006',name:'AEON Alam Sutera'},{code:'MSP',name:'Serpong Paradise'},{code:'IBS',name:'ITC BSD'},
   {code:'TKO',name:'Teras Kota'},{code:'GMM',name:'Grand Metropolitan Mall'},{code:'PMB',name:'Pakuwon Mall Bekasi'},
@@ -4020,7 +4028,7 @@ var STORE_DB=[
   {code:'NKV',name:'New Kemang Village'},{code:'GDC',name:'Gandaria City'},{code:'7003',name:'AEON Health & Beauty BXC'},
   {code:'CRT',name:'Citra Raya Tangerang'},{code:'1008',name:'AEON Ciputra Tangerang'},{code:'CEP',name:'Central Park'},
   {code:'NGM',name:'New Gajah Mada Plaza'},{code:'7004',name:'AEON Health & Beauty Citraland'},{code:'1001',name:'AEON BSD City'},
-  {code:'1010',name:'AEON Eastvara'}
+  {code:'1010',name:'AEON Eastvara'},{code:'1014',name:'AEON Emporium Pluit'}
 ];
 
 // ================================================================
@@ -4735,7 +4743,7 @@ function confirmReset(){
 function openExportModal(){document.getElementById('exportOverlay').classList.add('open');}
 function closeExportModal(){document.getElementById('exportOverlay').classList.remove('open');}
 function closeExportModalOnBg(e){if(e.target===document.getElementById('exportOverlay'))closeExportModal();}
-function confirmExportExcel(){closeExportModal();exportExcel();}
+function confirmExportExcel(){closeExportModal();exportExcel();saveFormOpnameToHistory();}
 
 // ================================================================
 // EXCEL EXPORT
@@ -5119,17 +5127,31 @@ async function renderHistoryList(){
   if(!list)return;
   list.innerHTML='<div class="history-empty" style="color:rgba(255,255,255,.4);padding:20px;text-align:center;font-size:13px">\u23F3 Memuat dari server...</div>';
   var q=(document.getElementById('historySearchInput')?document.getElementById('historySearchInput').value:'').toLowerCase().trim();
+  var filterDate=(document.getElementById('historyFilterDate')?document.getElementById('historyFilterDate').value:'').trim();
   var data=await getHistoryData();
-  var filtered=q?data.filter(function(d){return d.name.toLowerCase().indexOf(q)>=0;}):data;
+  var filtered=data.filter(function(d){
+    var nameMatch=!q||d.name.toLowerCase().indexOf(q)>=0;
+    var dateMatch=!filterDate;
+    if(filterDate&&d.ts){
+      var itemDate=d.ts.split('T')[0];
+      dateMatch=itemDate===filterDate;
+    }
+    return nameMatch&&dateMatch;
+  });
   if(!filtered.length){
-    list.innerHTML='<div class="history-empty">'+(q?'Tidak ada hasil untuk "'+escHTML(q)+'"':'Belum ada history. Klik "Save Form Opname" untuk menyimpan.')+'</div>';
+    var msg='';
+    if(q&&filterDate)msg='Tidak ada hasil untuk "'+escHTML(q)+'" pada tanggal tersebut';
+    else if(q)msg='Tidak ada hasil untuk "'+escHTML(q)+'"';
+    else if(filterDate)msg='Tidak ada history pada tanggal tersebut';
+    else msg='Belum ada history. Klik "Export Excel" untuk menyimpan ke History.';
+    list.innerHTML='<div class="history-empty">'+msg+'</div>';
     return;
   }
   var html='';
   for(var i=0;i<filtered.length;i++){
     var item=filtered[i];
     var dt=new Date(item.ts);
-    var dtStr=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+    var dtStr=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
     html+='<div class="history-item">'+
       '<div class="history-item-icon">&#x1F4CB;</div>'+
       '<div class="history-item-info">'+
