@@ -83,6 +83,9 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left;font-size:15px}
 input[type="date"].history-filter-input{-webkit-appearance:none;appearance:none;min-height:0;color-scheme:dark;cursor:pointer}
 input[type="date"].history-filter-input::-webkit-date-and-time-value{font-size:13px}
 input[type="date"].history-filter-input::-webkit-calendar-picker-indicator{filter:invert(1) brightness(1.7);opacity:.9;cursor:pointer;margin-left:6px}
+.gen-select{width:100%;height:38px;box-sizing:border-box;padding:0 12px;border:1.5px solid rgba(255,255,255,.12);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:white;background:#1a111840;outline:none;cursor:pointer;transition:border-color .2s,box-shadow .2s}
+.gen-select:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(200,80,106,.15)}
+.gen-select option{background:#1a1118;color:white}
 .search-count{font-size:12px;color:var(--ink-soft);margin-top:7px;font-family:'DM Mono',monospace}
 .filter-active-badge{display:inline-flex;align-items:center;gap:6px;background:var(--rose);color:white;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;margin-top:7px}
 .filter-active-badge.hidden{display:none}
@@ -431,6 +434,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
     <button class="nav-item" onclick="closeNavDrawer();showSidebarPage('inputreport')"><span class="nav-item-icon">&#x1F4CA;</span> Input Report</button>
     <button class="nav-item" onclick="closeNavDrawer();showSidebarPage('history')"><span class="nav-item-icon">&#x1F4DC;</span> History</button>
     <button class="nav-item" onclick="closeNavDrawer();showSidebarPage('repository')"><span class="nav-item-icon">&#x1F4E6;</span> Repository</button>
+    <button class="nav-item" onclick="closeNavDrawer();showSidebarPage('generator')"><span class="nav-item-icon">&#x1F3B2;</span> Generator</button>
     <div class="nav-divider"></div>
     <div class="nav-section-label">Others</div>
     <button class="nav-item" onclick="closeNavDrawer();refreshPage()"><span class="nav-item-icon">&#x1F504;</span> Refresh Halaman</button>
@@ -897,6 +901,79 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
         </div>
       </div>
       <div id="repositoryList" style="min-height:80px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- GENERATOR PAGE -->
+<div class="full-page" id="pageGenerator">
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-scroll">
+    <div class="log-card" style="margin-bottom:14px">
+      <div class="log-card-header">
+        <span class="log-card-title">&#x1F3B2; Generator &mdash; Random Reduce Stock</span>
+      </div>
+      <div style="padding:12px 16px;font-size:12px;line-height:1.6;color:rgba(255,255,255,.55)">
+        Hanya mengurangi QTY pada SKU yang <b>sudah terisi</b> di file yang sedang dibuka saat ini. SKU kosong tidak akan disentuh, dan QTY tidak akan pernah ditambah &mdash; hanya dikurangi (minimum tetap 1, tidak akan sampai 0).
+      </div>
+      <div style="padding:0 16px 16px 16px;display:grid;grid-template-columns:1fr;gap:12px">
+        <div>
+          <label style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;display:block;font-family:'DM Mono',monospace">Sheet / Toko</label>
+          <select class="gen-select" id="genSheet" onchange="renderGeneratorPage()">
+            <option value="AEON">AEON</option>
+            <option value="WATSONS">WATSONS</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;display:block;font-family:'DM Mono',monospace">Field yang Dikurangi</label>
+          <select class="gen-select" id="genField" onchange="renderGeneratorPage()">
+            <option value="bw">Backwall</option>
+            <option value="la">Laci</option>
+            <option value="rr">Rak Reguler</option>
+            <option value="rp">Rak Promo</option>
+            <option value="gu">Gudang</option>
+            <option value="all" selected>All Field</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;display:block;font-family:'DM Mono',monospace">Persentase SKU yang Dikurangi</label>
+          <select class="gen-select" id="genPercent" onchange="renderGeneratorPage()">
+            <option value="25">25%</option>
+            <option value="50" selected>50%</option>
+            <option value="75">75%</option>
+            <option value="100">100%</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;display:block;font-family:'DM Mono',monospace">Intensitas Pengurangan</label>
+          <select class="gen-select" id="genIntensity" onchange="renderGeneratorPage()">
+            <option value="low">Low (&minus;1 atau &minus;2)</option>
+            <option value="medium" selected>Medium (&minus;3 atau &minus;4)</option>
+            <option value="high">High (&minus;5)</option>
+          </select>
+        </div>
+      </div>
+      <div id="genPreview" style="padding:12px 16px;border-top:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.15);font-size:12px;color:rgba(255,255,255,.7);line-height:1.7"></div>
+      <div style="padding:14px 16px 18px 16px">
+        <button class="log-hbtn danger" id="genRunBtn" style="width:100%;padding:11px;font-size:12px" onclick="openGeneratorConfirm()">&#x1F3B2; Generate</button>
+        <div class="json-undo-bar" style="margin-top:10px">
+          <button class="json-undo-btn" id="genBtnUndo" onclick="openUndoConfirm()" disabled>&#x21A9; Undo</button>
+          <button class="json-undo-btn" id="genBtnRedo" onclick="doRedo()" disabled>&#x21AA; Redo</button>
+          <span class="json-undo-stack-info" id="genUndoStackInfo"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GENERATOR: Konfirmasi Jalankan -->
+<div class="modal-overlay" id="generatorConfirmOverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x26A0;&#xFE0F;</div>
+    <div class="modal-desc" id="generatorConfirmDesc"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeGeneratorConfirm()">Batal</button>
+      <button class="modal-btn confirm" onclick="confirmRunGenerator()">Ya, Kurangi</button>
     </div>
   </div>
 </div>
@@ -4125,11 +4202,118 @@ function updateUndoRedoUI(){
   btnR.className='json-undo-btn'+(_redoStack.length>0?' redo-active':'');
   var parts=[];if(_undoStack.length>0)parts.push(_undoStack.length+' undo');if(_redoStack.length>0)parts.push(_redoStack.length+' redo');
   info.textContent=parts.join('  |  ');
+  var genU=document.getElementById('genBtnUndo'),genR=document.getElementById('genBtnRedo'),genInfo=document.getElementById('genUndoStackInfo');
+  if(genU){
+    genU.disabled=_undoStack.length===0;genR.disabled=_redoStack.length===0;
+    genU.className='json-undo-btn'+(_undoStack.length>0?' undo-active':'');
+    genR.className='json-undo-btn'+(_redoStack.length>0?' redo-active':'');
+    genInfo.textContent=parts.join('  |  ');
+  }
 }
 function openUndoConfirm(){if(_undoStack.length===0)return;var top=_undoStack[_undoStack.length-1];var cnt=Object.keys(top.before).length;document.getElementById('undoConfirmDesc').textContent='Import ke "'+FIELD_LABELS[top.field]+'" ('+top.store+') sebanyak '+cnt+' produk akan di-undo.\nAngka akan dikembalikan ke nilai sebelumnya.';document.getElementById('undoConfirmOverlay').classList.add('open');}
 function closeUndoConfirm(){document.getElementById('undoConfirmOverlay').classList.remove('open');}
 function confirmUndo(){closeUndoConfirm();if(_undoStack.length===0)return;var entry=_undoStack.pop();var keys=Object.keys(entry.before);for(var i=0;i<keys.length;i++){var idx=keys[i];if(!qtyData[entry.store][idx])qtyData[entry.store][idx]={bw:'',la:'',rr:'',rp:'',gu:''};qtyData[entry.store][idx][entry.field]=entry.before[idx];}_redoStack.push(entry);renderTable();scheduleSave();updateUndoRedoUI();showToast('Undo berhasil \u2014 '+keys.length+' produk dikembalikan');}
 function doRedo(){if(_redoStack.length===0)return;var entry=_redoStack.pop();var keys=Object.keys(entry.after);for(var i=0;i<keys.length;i++){var idx=keys[i];if(!qtyData[entry.store][idx])qtyData[entry.store][idx]={bw:'',la:'',rr:'',rp:'',gu:''};qtyData[entry.store][idx][entry.field]=entry.after[idx];}_undoStack.push(entry);renderTable();scheduleSave();updateUndoRedoUI();showToast('Redo berhasil \u2014 '+keys.length+' produk diterapkan kembali');}
+
+// ================================================================
+// GENERATOR — random reduce stock pada SKU yang sudah terisi
+// (hanya mempengaruhi qtyData di memori file yang sedang dibuka;
+// tidak pernah menambah, hanya boleh mengurangi, dan tidak pernah
+// menyentuh SKU yang masih kosong)
+// ================================================================
+var GEN_FIELD_KEYS=['bw','la','rr','rp','gu'];
+var GEN_INTENSITY_RANGE={low:[1,2],medium:[3,4],high:[5,5]};
+function getProdsFor(sheet){return sheet==='AEON'?PRODUCTS.aeon:PRODUCTS.watsons;}
+function genRandInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function genShuffle(arr){
+  var a=arr.slice();
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
+}
+// Pool SKU yang memenuhi syarat dikurangi sesuai field yang dipilih
+function genComputePool(sheet,fieldSel){
+  var prods=getProdsFor(sheet),data=qtyData[sheet]||{},pool=[];
+  for(var i=0;i<prods.length;i++){
+    var d=data[i]||{};
+    if(fieldSel==='all'){if(calcTotal(d)>0)pool.push(i);}
+    else{if((parseInt(d[fieldSel])||0)>0)pool.push(i);}
+  }
+  return pool;
+}
+function genReadSettings(){
+  return{
+    sheet:document.getElementById('genSheet').value,
+    field:document.getElementById('genField').value,
+    percent:parseInt(document.getElementById('genPercent').value)||50,
+    intensity:document.getElementById('genIntensity').value
+  };
+}
+function renderGeneratorPage(){
+  var s=genReadSettings();
+  var prods=getProdsFor(s.sheet);
+  var pool=genComputePool(s.sheet,s.field);
+  var pickCount=pool.length>0?Math.max(1,Math.round(pool.length*s.percent/100)):0;
+  var fieldLabel=s.field==='all'?'Semua Field':(FIELD_LABELS[s.field]||s.field);
+  var range=GEN_INTENSITY_RANGE[s.intensity];
+  var rangeLabel=range[0]===range[1]?('-'+range[0]):('-'+range[0]+' s/d -'+range[1]);
+  var filled=0,totalQty=0;
+  for(var i=0;i<prods.length;i++){var t=calcTotal((qtyData[s.sheet]||{})[i]||{});if(t>0)filled++;totalQty+=t;}
+  document.getElementById('genPreview').innerHTML=
+    '\u{1F4CA} <b>'+s.sheet+'</b> &mdash; Total Stock: <b>'+totalQty+'</b> &bull; Diisi: <b>'+filled+'</b> SKU<br>'+
+    'Pool SKU terisi pada "'+fieldLabel+'": <b>'+pool.length+'</b> SKU<br>'+
+    'Akan dipilih acak: <b>'+pickCount+' SKU</b> ('+s.percent+'%)<br>'+
+    'Tiap field terpilih dikurangi acak: <b>'+rangeLabel+'</b> per field (tidak sampai negatif)';
+}
+function openGeneratorConfirm(){
+  var s=genReadSettings();
+  var pool=genComputePool(s.sheet,s.field);
+  if(!pool.length){showToast('\u26A0\uFE0F Tidak ada SKU terisi untuk dikurangi pada pilihan ini');return;}
+  var pickCount=Math.max(1,Math.round(pool.length*s.percent/100));
+  var fieldLabel=s.field==='all'?'Semua Field':(FIELD_LABELS[s.field]||s.field);
+  document.getElementById('generatorConfirmDesc').textContent=
+    'Akan mengurangi QTY pada \u00b1'+pickCount+' SKU acak (dari '+pool.length+' SKU terisi) di sheet '+s.sheet+'.\n'+
+    'Field: '+fieldLabel+' \u2014 Intensitas: '+s.intensity.toUpperCase()+' ('+s.percent+'% SKU).\n'+
+    'Hanya mengurangi, tidak menambah. SKU kosong tidak akan disentuh.\nLanjutkan?';
+  document.getElementById('generatorConfirmOverlay').classList.add('open');
+}
+function closeGeneratorConfirm(){document.getElementById('generatorConfirmOverlay').classList.remove('open');}
+function confirmRunGenerator(){
+  closeGeneratorConfirm();
+  var s=genReadSettings();
+  var pool=genComputePool(s.sheet,s.field);
+  if(!pool.length){showToast('\u26A0\uFE0F Tidak ada SKU terisi untuk dikurangi pada pilihan ini');return;}
+  var pickCount=Math.max(1,Math.round(pool.length*s.percent/100));
+  var selectedIdx=genShuffle(pool).slice(0,pickCount);
+  var fieldsToTouch=s.field==='all'?GEN_FIELD_KEYS:[s.field];
+  var range=GEN_INTENSITY_RANGE[s.intensity];
+  var affectedSkuSet={},totalReductions=0;
+  for(var fi=0;fi<fieldsToTouch.length;fi++){
+    var f=fieldsToTouch[fi],changedIdxs=[],beforeValues={};
+    for(var i=0;i<selectedIdx.length;i++){
+      var idx=selectedIdx[i];
+      if(!qtyData[s.sheet][idx])qtyData[s.sheet][idx]={bw:'',la:'',rr:'',rp:'',gu:''};
+      var d=qtyData[s.sheet][idx];
+      var curVal=parseInt(d[f])||0;
+      if(curVal<=1)continue; // sudah kosong atau sudah di angka minimum (1), jangan disentuh
+      var reduceAmt=Math.min(genRandInt(range[0],range[1]),curVal-1); // hasil akhir minimum tetap 1, tidak boleh sampai 0
+      if(reduceAmt<=0)continue;
+      var oldStr=String(d[f]),newVal=curVal-reduceAmt,newStr=String(newVal);
+      beforeValues[idx]=oldStr;
+      d[f]=newStr;
+      changedIdxs.push(idx);
+      addLogEntry(s.sheet,idx,f,oldStr,newStr);
+      affectedSkuSet[idx]=true;
+      totalReductions++;
+    }
+    if(changedIdxs.length>0)pushUndo(s.sheet,f,changedIdxs,beforeValues);
+  }
+  if(totalReductions===0){showToast('\u26A0\uFE0F Tidak ada nilai yang bisa dikurangi (semua sudah 0)');return;}
+  if(s.sheet===currentStore){renderTable();updateStats();}
+  scheduleSave();
+  renderGeneratorPage();
+  var skuCount=Object.keys(affectedSkuSet).length;
+  showToast('\u2705 Generator: '+skuCount+' SKU dikurangi ('+totalReductions+' field) di '+s.sheet);
+}
 
 // ================================================================
 // STORE DROPDOWN
@@ -4349,7 +4533,7 @@ function showToast(msg){var t=document.getElementById('toast');t.textContent=msg
 // ================================================================
 // SIDEBAR / PAGES
 // ================================================================
-var PAGE_IDS={listproduk:'pageListProduk',totalsearch:'pageTotalSearch',importjson:'pageImportJSON',logactivity:'pageLogActivity',audiorecord:'pageAudioRecord',audiotrimmer:'pageAudioTrimmer',audioconnector:'pageAudioConnector',formattingwa:'pageFormattingWA',managelistharga:'pageManageListHarga',inputreport:'pageInputReport',history:'pageHistory',repository:'pageRepository'};
+var PAGE_IDS={listproduk:'pageListProduk',totalsearch:'pageTotalSearch',importjson:'pageImportJSON',logactivity:'pageLogActivity',audiorecord:'pageAudioRecord',audiotrimmer:'pageAudioTrimmer',audioconnector:'pageAudioConnector',formattingwa:'pageFormattingWA',managelistharga:'pageManageListHarga',inputreport:'pageInputReport',history:'pageHistory',repository:'pageRepository',generator:'pageGenerator'};
 var EMBED_PAGE_CONFIG={
   audiotrimmer:{frameId:'frameAudioTrimmer',dataId:'embedToolsImplora',tabIndex:0},
   audioconnector:{frameId:'frameAudioConnector',dataId:'embedToolsImplora',tabIndex:1},
@@ -4411,6 +4595,7 @@ function showSidebarPage(page){
   if(page==='inputreport')initInputReport();
   if(page==='history')renderHistoryList();
   if(page==='repository')renderRepositoryList();
+  if(page==='generator'){document.getElementById('genSheet').value=currentStore;renderGeneratorPage();updateUndoRedoUI();}
   if(page==='audiorecord'){
     renderAudioList();
     if(_isRecording){
