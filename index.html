@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -430,6 +430,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
     <div class="nav-section-label">Tools</div>
     <button class="nav-item" onclick="closeNavDrawer();showSidebarPage('inputreport')"><span class="nav-item-icon">&#x1F4CA;</span> Input Report</button>
     <button class="nav-item" onclick="closeNavDrawer();showSidebarPage('history')"><span class="nav-item-icon">&#x1F4DC;</span> History</button>
+    <button class="nav-item" onclick="closeNavDrawer();showSidebarPage('repository')"><span class="nav-item-icon">&#x1F4E6;</span> Repository</button>
     <div class="nav-divider"></div>
     <div class="nav-section-label">Others</div>
     <button class="nav-item" onclick="closeNavDrawer();refreshPage()"><span class="nav-item-icon">&#x1F504;</span> Refresh Halaman</button>
@@ -867,6 +868,72 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
         </div>
       </div>
       <div id="historyList" style="min-height:80px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="full-page" id="pageRepository">
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-scroll" id="repositoryContent">
+    <div class="log-card" style="margin-bottom:14px">
+      <div class="log-card-header" style="flex-wrap:wrap;gap:8px">
+        <span class="log-card-title">&#x1F4E6; Repository</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <button class="log-hbtn danger" onclick="openRepositoryClearAllModal()">&#x1F5D1; Hapus Semua</button>
+        </div>
+      </div>
+      <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.15)">
+        <div style="display:grid;grid-template-columns:1fr;gap:12px">
+          <div>
+            <label style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;display:block;font-family:'DM Mono',monospace">Cari Nama Toko</label>
+            <input type="text" id="repositorySearchInput" class="history-filter-input" placeholder="Nama toko..." oninput="renderRepositoryList()">
+          </div>
+          <div>
+            <label style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;display:block;font-family:'DM Mono',monospace">Tanggal Opname</label>
+            <input type="date" id="repositoryFilterDate" class="history-filter-input" oninput="renderRepositoryList()">
+          </div>
+        </div>
+      </div>
+      <div id="repositoryList" style="min-height:80px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REPOSITORY: Konfirmasi Jalankan -->
+<div class="modal-overlay" id="repositoryRunOverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x25B6;&#xFE0F;</div>
+    <div class="modal-title">Yakin Jalankan Memory?</div>
+    <div class="modal-desc">Data Form Opname yang sekarang akan hilang dan digantikan oleh data yang dipilih.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeRepositoryRunModal()">Tidak</button>
+      <button class="modal-btn primary" onclick="confirmRunRepository()">Ya, Jalankan</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPOSITORY: Konfirmasi Hapus satu -->
+<div class="modal-overlay" id="repositoryDelOneOverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x1F5D1;&#xFE0F;</div>
+    <div class="modal-title">Yakin Hapus?</div>
+    <div class="modal-desc" id="repositoryDelOneDesc">Item ini akan dihapus permanen.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeRepositoryDelOneModal()">Tidak</button>
+      <button class="modal-btn confirm" onclick="confirmDelOneRepository()">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPOSITORY: Konfirmasi Hapus Semua -->
+<div class="modal-overlay" id="repositoryClearAllOverlay">
+  <div class="modal">
+    <div class="modal-icon">&#x26A0;&#xFE0F;</div>
+    <div class="modal-title">Yakin Hapus Semua?</div>
+    <div class="modal-desc">Seluruh data Repository akan dihapus permanen.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeRepositoryClearAllModal()">Tidak</button>
+      <button class="modal-btn confirm" onclick="confirmClearAllRepository()">Ya, Hapus Semua</button>
     </div>
   </div>
 </div>
@@ -4034,6 +4101,13 @@ var STORE_DB=[
 ];
 
 // ================================================================
+// REPOSITORY — daftar kode toko yang masuk channel Repository
+// (selain kode di bawah ini, otomatis masuk ke History)
+// ================================================================
+var REPOSITORY_STORE_CODES=['GPK','ICM','MLM','NBM','BUP','CIM','GGP','LHI','PPG','CPJ','KJI','MCJ','MKK','PZK','PFT','LWK','PCB','TCB','LSS','KCS','GMM','LCK','MMB','PMB','MAG','MKG','MOI','SNM','MJT','1004','1002','7001','1007','1005','7005','1014'];
+function isRepoStore(code){return REPOSITORY_STORE_CODES.indexOf(code)>=0;}
+
+// ================================================================
 // UNDO/REDO
 // ================================================================
 function pushUndo(store,field,changedIdxs,beforeValues){
@@ -4273,7 +4347,7 @@ function showToast(msg){var t=document.getElementById('toast');t.textContent=msg
 // ================================================================
 // SIDEBAR / PAGES
 // ================================================================
-var PAGE_IDS={listproduk:'pageListProduk',totalsearch:'pageTotalSearch',importjson:'pageImportJSON',logactivity:'pageLogActivity',audiorecord:'pageAudioRecord',audiotrimmer:'pageAudioTrimmer',audioconnector:'pageAudioConnector',formattingwa:'pageFormattingWA',managelistharga:'pageManageListHarga',inputreport:'pageInputReport',history:'pageHistory'};
+var PAGE_IDS={listproduk:'pageListProduk',totalsearch:'pageTotalSearch',importjson:'pageImportJSON',logactivity:'pageLogActivity',audiorecord:'pageAudioRecord',audiotrimmer:'pageAudioTrimmer',audioconnector:'pageAudioConnector',formattingwa:'pageFormattingWA',managelistharga:'pageManageListHarga',inputreport:'pageInputReport',history:'pageHistory',repository:'pageRepository'};
 var EMBED_PAGE_CONFIG={
   audiotrimmer:{frameId:'frameAudioTrimmer',dataId:'embedToolsImplora',tabIndex:0},
   audioconnector:{frameId:'frameAudioConnector',dataId:'embedToolsImplora',tabIndex:1},
@@ -4334,6 +4408,7 @@ function showSidebarPage(page){
   if(page==='logactivity')renderLogPage();
   if(page==='inputreport')initInputReport();
   if(page==='history')renderHistoryList();
+  if(page==='repository')renderRepositoryList();
   if(page==='audiorecord'){
     renderAudioList();
     if(_isRecording){
@@ -5025,9 +5100,20 @@ async function getHistoryData(){
     var res=await fetch(D1_API_URL+'/history');
     if(!res.ok)throw new Error('HTTP '+res.status);
     var data=await res.json();
-    _historyCache=data;
+    if(Array.isArray(data)){
+      // Merge: pertahankan item lokal yang belum dikonfirmasi oleh server
+      // (misalnya jika POST gagal, item tetap muncul dari cache lokal)
+      var serverIds={};
+      for(var i=0;i<data.length;i++)serverIds[String(data[i].id)]=true;
+      var pendingLocal=_historyCache.filter(function(x){return !serverIds[String(x.id)];});
+      if(pendingLocal.length>0){
+        data=pendingLocal.concat(data);
+        data.sort(function(a,b){return b.id-a.id;});
+      }
+      _historyCache=data;
+    }
     saveHistoryCacheToLS();
-    return data;
+    return _historyCache;
   }catch(e){
     console.warn('D1 fetch failed, menggunakan localStorage cache:',e);
     if(_historyCache.length===0)loadHistoryCacheFromLS();
@@ -5083,21 +5169,6 @@ function saveFormOpnameToHistory(){
   var sheet=document.getElementById('sheetSelect').value;
   var storeDisplay=document.getElementById('storeDisplay').textContent;
 
-  // Check ada data atau tidak
-  var hasData=false;
-  var allKeys=['AEON','WATSONS'];
-  for(var s=0;s<allKeys.length;s++){
-    var storeKey=allKeys[s];
-    if(qtyData[storeKey]){
-      var idxs=Object.keys(qtyData[storeKey]);
-      for(var k=0;k<idxs.length;k++){
-        var d=qtyData[storeKey][idxs[k]];
-        if(d&&(parseInt(d.bw)||parseInt(d.la)||parseInt(d.rr)||parseInt(d.rp)||parseInt(d.gu))){hasData=true;break;}
-      }
-    }
-    if(hasData)break;
-  }
-
   var name=buildHistoryName();
   var ts=new Date().toISOString();
   var id=Date.now();
@@ -5115,13 +5186,20 @@ function saveFormOpnameToHistory(){
     qtyData:{AEON:JSON.parse(JSON.stringify(qtyData.AEON||{})),WATSONS:JSON.parse(JSON.stringify(qtyData.WATSONS||{}))}
   };
 
+  // ── Simpan ke cache lokal & localStorage terlebih dahulu (sinkron, pasti berhasil) ──
   _historyCache.unshift(snapshot);
   saveHistoryCacheToLS();
-  showToast('\u23F3 Menyimpan...');
-  saveOneHistoryItem(snapshot).then(function(){
-    renderHistoryList();
-    showToast('\u2705 Tersimpan: '+name);
-  });
+
+  // ── Tampilkan toast sukses segera — tidak perlu tunggu server ──
+  var destIsRepo=isRepoStore(storeCode);
+  showToast(destIsRepo?'\u2705 Tersimpan ke Repository: '+name:'\u2705 Tersimpan ke History: '+name);
+
+  // ── Jika user sedang berada di halaman History/Repository, render ulang dengan data lokal ──
+  if(_activePage==='history')renderHistoryList();
+  if(_activePage==='repository')renderRepositoryList();
+
+  // ── Kirim ke server D1 di background (fire-and-forget, tidak blocking UI) ──
+  saveOneHistoryItem(snapshot);
 }
 
 async function renderHistoryList(){
@@ -5138,7 +5216,8 @@ async function renderHistoryList(){
       var itemDate=d.ts.split('T')[0];
       dateMatch=itemDate===filterDate;
     }
-    return nameMatch&&dateMatch;
+    var notRepo=!isRepoStore(d.storeCode);
+    return nameMatch&&dateMatch&&notRepo;
   });
   if(!filtered.length){
     var msg='';
@@ -5222,12 +5301,130 @@ function confirmDelOneHistory(){
 function openHistoryClearAllModal(){document.getElementById('historyClearAllOverlay').classList.add('open');}
 function closeHistoryClearAllModal(){document.getElementById('historyClearAllOverlay').classList.remove('open');}
 function confirmClearAllHistory(){
-  clearAllHistoryItems().then(function(){
-    _historyCache=[];
+  var targetItems=_historyCache.filter(function(x){return !isRepoStore(x.storeCode);});
+  showToast('\u23F3 Menghapus...');
+  Promise.all(targetItems.map(function(item){return deleteOneHistoryItem(item.id);})).then(function(){
+    _historyCache=_historyCache.filter(function(x){return isRepoStore(x.storeCode);});
     saveHistoryCacheToLS();
     closeHistoryClearAllModal();
     renderHistoryList();
     showToast('Semua history dihapus');
+  });
+}
+
+// ================================================================
+// REPOSITORY FORM OPNAME — pakai backend & cache yang sama dengan
+// History (D1 _historyCache), dipisah berdasarkan kode toko
+// ================================================================
+var _repoRunId=null,_repoDelId=null;
+
+async function renderRepositoryList(){
+  var list=document.getElementById('repositoryList');
+  if(!list)return;
+  list.innerHTML='<div class="history-empty" style="color:rgba(255,255,255,.4);padding:20px;text-align:center;font-size:13px">\u23F3 Memuat dari server...</div>';
+  var q=(document.getElementById('repositorySearchInput')?document.getElementById('repositorySearchInput').value:'').toLowerCase().trim();
+  var filterDate=(document.getElementById('repositoryFilterDate')?document.getElementById('repositoryFilterDate').value:'').trim();
+  var data=await getHistoryData();
+  var filtered=data.filter(function(d){
+    var nameMatch=!q||d.name.toLowerCase().indexOf(q)>=0;
+    var dateMatch=!filterDate;
+    if(filterDate&&d.ts){
+      var itemDate=d.ts.split('T')[0];
+      dateMatch=itemDate===filterDate;
+    }
+    var isRepo=isRepoStore(d.storeCode);
+    return nameMatch&&dateMatch&&isRepo;
+  });
+  if(!filtered.length){
+    var msg='';
+    if(q&&filterDate)msg='Tidak ada hasil untuk "'+escHTML(q)+'" pada tanggal tersebut';
+    else if(q)msg='Tidak ada hasil untuk "'+escHTML(q)+'"';
+    else if(filterDate)msg='Tidak ada data Repository pada tanggal tersebut';
+    else msg='Belum ada data Repository. Pilih toko dari daftar Repository lalu klik "Export Excel".';
+    list.innerHTML='<div class="history-empty">'+msg+'</div>';
+    return;
+  }
+  var html='';
+  for(var i=0;i<filtered.length;i++){
+    var item=filtered[i];
+    var dt=new Date(item.ts);
+    var dtStr=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
+    html+='<div class="history-item">'+
+      '<div class="history-item-icon">&#x1F4E6;</div>'+
+      '<div class="history-item-info">'+
+        '<div class="history-item-name">'+escHTML(item.name)+'</div>'+
+        '<div class="history-item-meta">'+item.sheet+' &bull; '+dtStr+'</div>'+
+      '</div>'+
+      '<div class="history-item-btns">'+
+        '<button class="history-action-btn run" title="Jalankan" onclick="openRepositoryRunModal('+item.id+')">&#x25B6;</button>'+
+        '<button class="history-action-btn del" title="Hapus" onclick="openRepositoryDelOneModal('+item.id+',\''+escAttr(item.name)+'\')">&#x1F5D1;</button>'+
+      '</div>'+
+    '</div>';
+  }
+  list.innerHTML=html;
+}
+
+// ── Run Modal ────────────────────────────────────────────────────
+function openRepositoryRunModal(id){_repoRunId=id;document.getElementById('repositoryRunOverlay').classList.add('open');}
+function closeRepositoryRunModal(){_repoRunId=null;document.getElementById('repositoryRunOverlay').classList.remove('open');}
+function confirmRunRepository(){
+  if(!_repoRunId){closeRepositoryRunModal();return;}
+  var data=_historyCache;
+  var item=null;for(var i=0;i<data.length;i++){if(data[i].id===_repoRunId){item=data[i];break;}}
+  if(!item){showToast('Data tidak ditemukan');closeRepositoryRunModal();return;}
+
+  // Restore data
+  qtyData.AEON=item.qtyData&&item.qtyData.AEON?JSON.parse(JSON.stringify(item.qtyData.AEON)):{};
+  qtyData.WATSONS=item.qtyData&&item.qtyData.WATSONS?JSON.parse(JSON.stringify(item.qtyData.WATSONS)):{};
+  if(item.storeCode)document.getElementById('storeCode').value=item.storeCode;
+  if(item.storeName2)document.getElementById('storeName2').value=item.storeName2;
+  if(item.storeDisplay)document.getElementById('storeDisplay').textContent=item.storeDisplay;
+  if(item.tanggal)document.getElementById('tanggal').value=item.tanggal;
+  if(item.namaBA)document.getElementById('namaBA').value=item.namaBA;
+  if(item.sheet){
+    document.getElementById('sheetSelect').value=item.sheet;currentStore=item.sheet;
+    document.getElementById('tabAEON').className=item.sheet==='AEON'?'tab active':'tab';
+    document.getElementById('tabWATSONS').className=item.sheet==='WATSONS'?'tab active':'tab';
+  }
+  saveToStorage();
+  renderTable();
+  closeRepositoryRunModal();
+  // Kembali ke home
+  closeSidebarPage('repository');
+  showToast('\u2705 Data "'+item.name+'" berhasil dimuat!');
+}
+
+// ── Del One Modal ────────────────────────────────────────────────
+function openRepositoryDelOneModal(id,name){
+  _repoDelId=id;
+  document.getElementById('repositoryDelOneDesc').textContent='"'+name+'" akan dihapus permanen.';
+  document.getElementById('repositoryDelOneOverlay').classList.add('open');
+}
+function closeRepositoryDelOneModal(){_repoDelId=null;document.getElementById('repositoryDelOneOverlay').classList.remove('open');}
+function confirmDelOneRepository(){
+  if(!_repoDelId){closeRepositoryDelOneModal();return;}
+  var id=_repoDelId;
+  deleteOneHistoryItem(id).then(function(){
+    _historyCache=_historyCache.filter(function(x){return x.id!==id;});
+    saveHistoryCacheToLS();
+    closeRepositoryDelOneModal();
+    renderRepositoryList();
+    showToast('Data Repository dihapus');
+  });
+}
+
+// ── Clear All Modal ──────────────────────────────────────────────
+function openRepositoryClearAllModal(){document.getElementById('repositoryClearAllOverlay').classList.add('open');}
+function closeRepositoryClearAllModal(){document.getElementById('repositoryClearAllOverlay').classList.remove('open');}
+function confirmClearAllRepository(){
+  var targetItems=_historyCache.filter(function(x){return isRepoStore(x.storeCode);});
+  showToast('\u23F3 Menghapus...');
+  Promise.all(targetItems.map(function(item){return deleteOneHistoryItem(item.id);})).then(function(){
+    _historyCache=_historyCache.filter(function(x){return !isRepoStore(x.storeCode);});
+    saveHistoryCacheToLS();
+    closeRepositoryClearAllModal();
+    renderRepositoryList();
+    showToast('Semua data Repository dihapus');
   });
 }
 
