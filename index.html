@@ -852,6 +852,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
       <div class="log-card-header" style="flex-wrap:wrap;gap:8px">
         <span class="log-card-title">&#x1F4DC; History Form Opname</span>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <span class="sync-badge" style="display:none;align-items:center;gap:4px;font-size:10px;color:#ffb84d;cursor:pointer;background:rgba(255,184,77,.12);padding:4px 8px;border-radius:6px" onclick="flushPendingSync()" title="Tap untuk sync sekarang"></span>
           <button class="log-hbtn danger" onclick="openHistoryClearAllModal()">&#x1F5D1; Hapus Semua</button>
         </div>
       </div>
@@ -879,6 +880,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
       <div class="log-card-header" style="flex-wrap:wrap;gap:8px">
         <span class="log-card-title">&#x1F4E6; Repository</span>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <span class="sync-badge" style="display:none;align-items:center;gap:4px;font-size:10px;color:#ffb84d;cursor:pointer;background:rgba(255,184,77,.12);padding:4px 8px;border-radius:6px" onclick="flushPendingSync()" title="Tap untuk sync sekarang"></span>
           <button class="log-hbtn danger" onclick="openRepositoryClearAllModal()">&#x1F5D1; Hapus Semua</button>
         </div>
       </div>
@@ -5095,14 +5097,75 @@ var _historyCache=[];
 var LS_HISTORY_KEY='implora_history_cache_v1';
 function saveHistoryCacheToLS(){try{localStorage.setItem(LS_HISTORY_KEY,JSON.stringify(_historyCache));}catch(e){}}
 function loadHistoryCacheFromLS(){try{var r=localStorage.getItem(LS_HISTORY_KEY);if(r){var d=JSON.parse(r);if(Array.isArray(d)){_historyCache=d;return d;}}}catch(e){}return [];}
+
+// ── PENDING SYNC QUEUE ────────────────────────────────────────────
+// Item yang BELUM berhasil terkirim ke server (D1) disimpan di sini,
+// supaya otomatis dicoba ulang nanti (online lagi / app dibuka lagi),
+// bukan hilang begitu saja hanya tersimpan di localStorage device.
+var LS_PENDING_KEY='implora_history_pending_v1';
+function loadPendingQueue(){try{var r=localStorage.getItem(LS_PENDING_KEY);if(r){var d=JSON.parse(r);if(Array.isArray(d))return d;}}catch(e){}return [];}
+function savePendingQueue(q){try{localStorage.setItem(LS_PENDING_KEY,JSON.stringify(q));}catch(e){}}
+function addToPendingQueue(snapshot){
+  var q=loadPendingQueue();
+  if(!q.some(function(x){return x.id===snapshot.id;}))q.push(snapshot);
+  savePendingQueue(q);
+  updateSyncBadge();
+}
+function removeFromPendingQueue(id){
+  var q=loadPendingQueue().filter(function(x){return x.id!==id;});
+  savePendingQueue(q);
+  updateSyncBadge();
+}
+function fetchWithTimeout(url,opts,ms){
+  ms=ms||10000;
+  var controller=new AbortController();
+  var t=setTimeout(function(){controller.abort();},ms);
+  opts=opts||{};opts.signal=controller.signal;
+  return fetch(url,opts).finally(function(){clearTimeout(t);});
+}
+var _flushingPending=false;
+async function flushPendingSync(){
+  if(_flushingPending)return;
+  var q=loadPendingQueue();
+  if(!q.length)return;
+  _flushingPending=true;
+  for(var i=0;i<q.length;i++){
+    try{
+      var res=await fetchWithTimeout(D1_API_URL+'/history',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(q[i])
+      });
+      if(res.ok)removeFromPendingQueue(q[i].id);
+    }catch(e){/* masih offline / server belum bisa dihubungi, coba lagi nanti */}
+  }
+  _flushingPending=false;
+  updateSyncBadge();
+  if(_activePage==='history')renderHistoryList();
+  if(_activePage==='repository')renderRepositoryList();
+}
+function updateSyncBadge(){
+  var n=loadPendingQueue().length;
+  var els=document.querySelectorAll('.sync-badge');
+  for(var i=0;i<els.length;i++){
+    els[i].style.display=n>0?'inline-flex':'none';
+    els[i].textContent='\u23F3 '+n+' belum tersinkron';
+  }
+}
+// Coba sync ulang otomatis: saat halaman dimuat, saat koneksi kembali online,
+// dan berkala selama masih ada item pending (menutup celah "tersimpan di HP
+// tapi tidak pernah sampai ke server / tidak muncul di device lain").
+window.addEventListener('online',flushPendingSync);
+window.addEventListener('load',function(){updateSyncBadge();flushPendingSync();});
+setInterval(function(){if(loadPendingQueue().length)flushPendingSync();},20000);
+
 async function getHistoryData(){
   try{
-    var res=await fetch(D1_API_URL+'/history');
+    var res=await fetchWithTimeout(D1_API_URL+'/history',{},10000);
     if(!res.ok)throw new Error('HTTP '+res.status);
     var data=await res.json();
     if(Array.isArray(data)){
-      // Merge: pertahankan item lokal yang belum dikonfirmasi oleh server
-      // (misalnya jika POST gagal, item tetap muncul dari cache lokal)
+      // Merge: pertahankan item lokal (termasuk yang masih pending sync)
+      // yang belum dikonfirmasi oleh server
       var serverIds={};
       for(var i=0;i<data.length;i++)serverIds[String(data[i].id)]=true;
       var pendingLocal=_historyCache.filter(function(x){return !serverIds[String(x.id)];});
@@ -5124,12 +5187,18 @@ async function getHistoryData(){
 // ── Simpan 1 item baru ke D1 (efisien) ──────────────────────────
 async function saveOneHistoryItem(snapshot){
   try{
-    var res=await fetch(D1_API_URL+'/history',{
+    var res=await fetchWithTimeout(D1_API_URL+'/history',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify(snapshot)
-    });
+    },10000);
     if(!res.ok)throw new Error('HTTP '+res.status);
-  }catch(e){showToast('\u26A0\uFE0F Gagal menyimpan ke server: '+e.message);}
+    removeFromPendingQueue(snapshot.id);
+  }catch(e){
+    // Jangan cuma kasih tahu error — simpan ke queue supaya otomatis
+    // dicoba lagi (online event / interval / buka app lagi), tidak hilang.
+    addToPendingQueue(snapshot);
+    showToast('\u26A0\uFE0F Belum tersinkron ke server, akan dicoba lagi otomatis');
+  }
 }
 
 // ── Hapus satu item dari D1 ───────────────────────────────────────
@@ -5205,6 +5274,7 @@ function saveFormOpnameToHistory(){
 async function renderHistoryList(){
   var list=document.getElementById('historyList');
   if(!list)return;
+  updateSyncBadge();flushPendingSync();
   list.innerHTML='<div class="history-empty" style="color:rgba(255,255,255,.4);padding:20px;text-align:center;font-size:13px">\u23F3 Memuat dari server...</div>';
   var q=(document.getElementById('historySearchInput')?document.getElementById('historySearchInput').value:'').toLowerCase().trim();
   var filterDate=(document.getElementById('historyFilterDate')?document.getElementById('historyFilterDate').value:'').trim();
@@ -5321,6 +5391,7 @@ var _repoRunId=null,_repoDelId=null;
 async function renderRepositoryList(){
   var list=document.getElementById('repositoryList');
   if(!list)return;
+  updateSyncBadge();flushPendingSync();
   list.innerHTML='<div class="history-empty" style="color:rgba(255,255,255,.4);padding:20px;text-align:center;font-size:13px">\u23F3 Memuat dari server...</div>';
   var q=(document.getElementById('repositorySearchInput')?document.getElementById('repositorySearchInput').value:'').toLowerCase().trim();
   var filterDate=(document.getElementById('repositoryFilterDate')?document.getElementById('repositoryFilterDate').value:'').trim();
