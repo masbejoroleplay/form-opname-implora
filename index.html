@@ -852,7 +852,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
       <div class="log-card-header" style="flex-wrap:wrap;gap:8px">
         <span class="log-card-title">&#x1F4DC; History Form Opname</span>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <span class="sync-badge" style="display:none;align-items:center;gap:4px;font-size:10px;color:#ffb84d;cursor:pointer;background:rgba(255,184,77,.12);padding:4px 8px;border-radius:6px" onclick="flushPendingSync()" title="Tap untuk sync sekarang"></span>
+          <span class="sync-badge" style="display:none;align-items:center;gap:4px;font-size:10px;color:#ffb84d;cursor:pointer;background:rgba(255,184,77,.12);padding:4px 8px;border-radius:6px" onclick="flushAllPending()" title="Tap untuk sync sekarang"></span>
           <button class="log-hbtn danger" onclick="openHistoryClearAllModal()">&#x1F5D1; Hapus Semua</button>
         </div>
       </div>
@@ -880,7 +880,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
       <div class="log-card-header" style="flex-wrap:wrap;gap:8px">
         <span class="log-card-title">&#x1F4E6; Repository</span>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <span class="sync-badge" style="display:none;align-items:center;gap:4px;font-size:10px;color:#ffb84d;cursor:pointer;background:rgba(255,184,77,.12);padding:4px 8px;border-radius:6px" onclick="flushPendingSync()" title="Tap untuk sync sekarang"></span>
+          <span class="sync-badge" style="display:none;align-items:center;gap:4px;font-size:10px;color:#ffb84d;cursor:pointer;background:rgba(255,184,77,.12);padding:4px 8px;border-radius:6px" onclick="flushAllPending()" title="Tap untuk sync sekarang"></span>
           <button class="log-hbtn danger" onclick="openRepositoryClearAllModal()">&#x1F5D1; Hapus Semua</button>
         </div>
       </div>
@@ -5116,6 +5116,40 @@ function removeFromPendingQueue(id){
   savePendingQueue(q);
   updateSyncBadge();
 }
+
+// ── PENDING DELETE QUEUE ──────────────────────────────────────────
+// Sama seperti pending-save, tapi untuk hapus. Tanpa ini, delete yang
+// gagal terkirim (device A hapus, tapi server tidak menerima karena
+// offline) tidak akan pernah ter-retry, jadi device B masih melihat
+// data yang "seharusnya" sudah terhapus.
+var LS_PENDING_DEL_KEY='implora_history_pending_del_v1';
+function loadPendingDeleteQueue(){try{var r=localStorage.getItem(LS_PENDING_DEL_KEY);if(r){var d=JSON.parse(r);if(Array.isArray(d))return d;}}catch(e){}return [];}
+function savePendingDeleteQueue(q){try{localStorage.setItem(LS_PENDING_DEL_KEY,JSON.stringify(q));}catch(e){}}
+function addToPendingDelete(id){
+  var q=loadPendingDeleteQueue();
+  if(q.indexOf(id)===-1)q.push(id);
+  savePendingDeleteQueue(q);
+  updateSyncBadge();
+}
+function removeFromPendingDelete(id){
+  var q=loadPendingDeleteQueue().filter(function(x){return x!==id;});
+  savePendingDeleteQueue(q);
+  updateSyncBadge();
+}
+var _flushingDeletes=false;
+async function flushPendingDeletes(){
+  if(_flushingDeletes)return;
+  var q=loadPendingDeleteQueue();
+  if(!q.length)return;
+  _flushingDeletes=true;
+  for(var i=0;i<q.length;i++){
+    try{
+      var res=await fetchWithTimeout(D1_API_URL+'/history/'+q[i],{method:'DELETE'});
+      if(res.ok||res.status===404)removeFromPendingDelete(q[i]);
+    }catch(e){/* coba lagi nanti */}
+  }
+  _flushingDeletes=false;
+}
 function fetchWithTimeout(url,opts,ms){
   ms=ms||10000;
   var controller=new AbortController();
@@ -5135,7 +5169,10 @@ async function flushPendingSync(){
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify(q[i])
       });
-      if(res.ok)removeFromPendingQueue(q[i].id);
+      if(res.ok){
+        removeFromPendingQueue(q[i].id);
+        showToast('\u2705 Tersinkron ke server: '+q[i].name);
+      }
     }catch(e){/* masih offline / server belum bisa dihubungi, coba lagi nanti */}
   }
   _flushingPending=false;
@@ -5144,7 +5181,7 @@ async function flushPendingSync(){
   if(_activePage==='repository')renderRepositoryList();
 }
 function updateSyncBadge(){
-  var n=loadPendingQueue().length;
+  var n=loadPendingQueue().length+loadPendingDeleteQueue().length;
   var els=document.querySelectorAll('.sync-badge');
   for(var i=0;i<els.length;i++){
     els[i].style.display=n>0?'inline-flex':'none';
@@ -5154,9 +5191,10 @@ function updateSyncBadge(){
 // Coba sync ulang otomatis: saat halaman dimuat, saat koneksi kembali online,
 // dan berkala selama masih ada item pending (menutup celah "tersimpan di HP
 // tapi tidak pernah sampai ke server / tidak muncul di device lain").
-window.addEventListener('online',flushPendingSync);
-window.addEventListener('load',function(){updateSyncBadge();flushPendingSync();});
-setInterval(function(){if(loadPendingQueue().length)flushPendingSync();},20000);
+function flushAllPending(){flushPendingSync();flushPendingDeletes();}
+window.addEventListener('online',flushAllPending);
+window.addEventListener('load',function(){updateSyncBadge();flushAllPending();});
+setInterval(function(){if(loadPendingQueue().length||loadPendingDeleteQueue().length)flushAllPending();},20000);
 
 async function getHistoryData(){
   try{
@@ -5164,11 +5202,21 @@ async function getHistoryData(){
     if(!res.ok)throw new Error('HTTP '+res.status);
     var data=await res.json();
     if(Array.isArray(data)){
-      // Merge: pertahankan item lokal (termasuk yang masih pending sync)
-      // yang belum dikonfirmasi oleh server
+      // Merge: HANYA tambahkan kembali item yang memang masih dalam
+      // antrian "belum tersinkron" (pending create). Item lain yang ada
+      // di cache lokal tapi tidak ada di server berarti SUDAH dihapus
+      // dari device lain — jangan dimunculkan lagi (ini bug sebelumnya:
+      // delete di device A tidak ikut hilang di device B).
+      var pendingIds={};
+      loadPendingQueue().forEach(function(p){pendingIds[String(p.id)]=true;});
+      var pendingDelIds={};
+      loadPendingDeleteQueue().forEach(function(id){pendingDelIds[String(id)]=true;});
       var serverIds={};
       for(var i=0;i<data.length;i++)serverIds[String(data[i].id)]=true;
-      var pendingLocal=_historyCache.filter(function(x){return !serverIds[String(x.id)];});
+      var pendingLocal=_historyCache.filter(function(x){
+        return !serverIds[String(x.id)]&&pendingIds[String(x.id)];
+      });
+      data=data.filter(function(x){return !pendingDelIds[String(x.id)];});
       if(pendingLocal.length>0){
         data=pendingLocal.concat(data);
         data.sort(function(a,b){return b.id-a.id;});
@@ -5186,26 +5234,37 @@ async function getHistoryData(){
 
 // ── Simpan 1 item baru ke D1 (efisien) ──────────────────────────
 async function saveOneHistoryItem(snapshot){
-  try{
-    var res=await fetchWithTimeout(D1_API_URL+'/history',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(snapshot)
-    },10000);
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    removeFromPendingQueue(snapshot.id);
-  }catch(e){
-    // Jangan cuma kasih tahu error — simpan ke queue supaya otomatis
-    // dicoba lagi (online event / interval / buka app lagi), tidak hilang.
-    addToPendingQueue(snapshot);
-    showToast('\u26A0\uFE0F Belum tersinkron ke server, akan dicoba lagi otomatis');
+  for(var attempt=0;attempt<2;attempt++){
+    try{
+      var res=await fetchWithTimeout(D1_API_URL+'/history',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(snapshot)
+      },10000);
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      removeFromPendingQueue(snapshot.id);
+      return;
+    }catch(e){
+      if(attempt===0)await new Promise(function(r){setTimeout(r,1500);}); // koneksi lambat/cold start, coba sekali lagi cepat
+    }
   }
+  // Tetap gagal setelah 2x coba — jangan hilang, simpan ke queue supaya
+  // otomatis dicoba lagi (online event / interval / buka app lagi).
+  addToPendingQueue(snapshot);
+  showToast('\u26A0\uFE0F Belum tersinkron ke server, akan dicoba lagi otomatis');
 }
 
 // ── Hapus satu item dari D1 ───────────────────────────────────────
 async function deleteOneHistoryItem(id){
   try{
-    await fetch(D1_API_URL+'/history/'+id,{method:'DELETE'});
-  }catch(e){showToast('\u26A0\uFE0F Gagal hapus dari server');}
+    var res=await fetchWithTimeout(D1_API_URL+'/history/'+id,{method:'DELETE'});
+    if(!res.ok&&res.status!==404)throw new Error('HTTP '+res.status);
+    removeFromPendingDelete(id);
+  }catch(e){
+    // Tetap hapus secara lokal (optimistic) & coba lagi otomatis nanti,
+    // supaya delete ikut tersinkron ke device lain begitu online.
+    addToPendingDelete(id);
+    showToast('\u26A0\uFE0F Hapus belum tersinkron, akan dicoba lagi otomatis');
+  }
 }
 
 // ── Hapus semua dari D1 ──────────────────────────────────────────
@@ -5274,7 +5333,7 @@ function saveFormOpnameToHistory(){
 async function renderHistoryList(){
   var list=document.getElementById('historyList');
   if(!list)return;
-  updateSyncBadge();flushPendingSync();
+  updateSyncBadge();flushAllPending();
   list.innerHTML='<div class="history-empty" style="color:rgba(255,255,255,.4);padding:20px;text-align:center;font-size:13px">\u23F3 Memuat dari server...</div>';
   var q=(document.getElementById('historySearchInput')?document.getElementById('historySearchInput').value:'').toLowerCase().trim();
   var filterDate=(document.getElementById('historyFilterDate')?document.getElementById('historyFilterDate').value:'').trim();
@@ -5391,7 +5450,7 @@ var _repoRunId=null,_repoDelId=null;
 async function renderRepositoryList(){
   var list=document.getElementById('repositoryList');
   if(!list)return;
-  updateSyncBadge();flushPendingSync();
+  updateSyncBadge();flushAllPending();
   list.innerHTML='<div class="history-empty" style="color:rgba(255,255,255,.4);padding:20px;text-align:center;font-size:13px">\u23F3 Memuat dari server...</div>';
   var q=(document.getElementById('repositorySearchInput')?document.getElementById('repositorySearchInput').value:'').toLowerCase().trim();
   var filterDate=(document.getElementById('repositoryFilterDate')?document.getElementById('repositoryFilterDate').value:'').trim();
