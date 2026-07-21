@@ -14,6 +14,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--mist);color:var(--ink);mi
 .header-back-btn{width:38px;height:38px;border-radius:10px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
 .header-back-btn:hover{background:rgba(255,255,255,.18)}
 .header-logo-wrap{flex:1;display:flex;justify-content:center;align-items:center}
+.implora-header-logo{display:block;width:auto;height:34px;max-width:190px;object-fit:contain;filter:invert(1)}
 .container{max-width:960px;margin:0 auto;padding:20px 14px 100px}
 .card{background:var(--white);border-radius:14px;box-shadow:0 2px 12px rgba(26,17,24,.08);margin-bottom:14px;overflow:hidden}
 .card-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
@@ -181,6 +182,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 .page-header-back{width:38px;height:38px;border-radius:10px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;line-height:1}
 .page-header-back:hover{background:rgba(255,255,255,.18)}
 .page-header-logo{flex:1;display:flex;justify-content:center;align-items:center}
+.page-header-logo .implora-header-logo{height:30px;max-width:175px}
 .page-header-spacer{width:38px;min-width:38px;flex-shrink:0}
 .page-scroll{flex:1;overflow-y:auto;padding:16px 14px 30px}
 .json-card{background:var(--ink);border-radius:14px;overflow:hidden;margin-bottom:14px}
@@ -379,6 +381,8 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 .embedded-page{padding:0;background:var(--white)}
 .embedded-frame{flex:1;width:100%;border:none;background:var(--white)}
 @media(max-width:520px){.header-left{min-width:38px}}
+.implora-header-logo{height:28px;max-width:150px}
+.page-header-logo .implora-header-logo{height:26px;max-width:145px}
 .header-left{display:flex;align-items:center;gap:8px;min-width:38px}
 .header-left .header-back-btn{display:none}
 .header-right-spacer{width:38px;min-width:38px;flex-shrink:0}
@@ -397,8 +401,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
     <button class="header-back-btn" id="headerBackBtn" onclick="handleHeaderBack()">&#8592;</button>
   </div>
   <div class="header-logo-wrap">
-    <span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span>
-    <span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span>
+    <img class="implora-header-logo" src="1730263247_Logo IMPLORA 2023 (1).png" alt="IMPLORA">
   </div>
   <div class="header-right-spacer"></div>
 </div>
@@ -643,13 +646,13 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 
 <!-- LIST PRODUK PAGE -->
 <div class="full-page" id="pageListProduk">
-  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><img class="implora-header-logo" src="1730263247_Logo IMPLORA 2023 (1).png" alt="IMPLORA"></div><div class="page-header-spacer"></div></div>
   <div class="page-scroll" id="listProdukContent"></div>
 </div>
 
 <!-- TOTAL BY SEARCH PAGE -->
 <div class="full-page" id="pageTotalSearch">
-  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><img class="implora-header-logo" src="1730263247_Logo IMPLORA 2023 (1).png" alt="IMPLORA"></div><div class="page-header-spacer"></div></div>
   <div class="page-scroll">
     <div class="tbs-search-wrap">
       <span class="tbs-search-icon">&#x1F50D;</span>
@@ -661,7 +664,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 
 <!-- IMPORT JSON PAGE -->
 <div class="full-page" id="pageImportJSON">
-  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><img class="implora-header-logo" src="1730263247_Logo IMPLORA 2023 (1).png" alt="IMPLORA"></div><div class="page-header-spacer"></div></div>
   <div class="page-scroll">
     <div class="json-card">
       <div class="json-card-header">
@@ -713,7 +716,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 
 <!-- LOG ACTIVITY PAGE -->
 <div class="full-page" id="pageLogActivity">
-  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><img class="implora-header-logo" src="1730263247_Logo IMPLORA 2023 (1).png" alt="IMPLORA"></div><div class="page-header-spacer"></div></div>
   <div class="log-page-scroll">
     <div class="log-card">
       <div class="log-card-header">
@@ -735,7 +738,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 
 <!-- AUDIO RECORD PAGE -->
 <div class="full-page" id="pageAudioRecord">
-  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><img class="implora-header-logo" src="1730263247_Logo IMPLORA 2023 (1).png" alt="IMPLORA"></div><div class="page-header-spacer"></div></div>
   <div class="audio-scroll">
     <div class="audio-card">
       <div class="audio-card-header">
@@ -777,7 +780,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 
 <!-- INPUT REPORT PAGE -->
 <div class="full-page" id="pageInputReport">
-  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><img class="implora-header-logo" src="1730263247_Logo IMPLORA 2023 (1).png" alt="IMPLORA"></div><div class="page-header-spacer"></div></div>
   <div class="page-scroll" id="inputReportContent">
     <div class="card" style="margin-bottom:14px">
       <div class="card-header">
@@ -850,7 +853,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 
 <!-- HISTORY PAGE -->
 <div class="full-page" id="pageHistory">
-  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><img class="implora-header-logo" src="1730263247_Logo IMPLORA 2023 (1).png" alt="IMPLORA"></div><div class="page-header-spacer"></div></div>
   <div class="page-scroll" id="historyContent">
     <div class="log-card" style="margin-bottom:14px">
       <div class="log-card-header" style="flex-wrap:wrap;gap:8px">
@@ -878,7 +881,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 </div>
 
 <div class="full-page" id="pageRepository">
-  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><img class="implora-header-logo" src="1730263247_Logo IMPLORA 2023 (1).png" alt="IMPLORA"></div><div class="page-header-spacer"></div></div>
   <div class="page-scroll" id="repositoryContent">
     <div class="log-card" style="margin-bottom:14px">
       <div class="log-card-header" style="flex-wrap:wrap;gap:8px">
@@ -907,7 +910,7 @@ tbody td{padding:8px 4px;vertical-align:middle;overflow:hidden}
 
 <!-- GENERATOR PAGE -->
 <div class="full-page" id="pageGenerator">
-  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><span style="font-size:18px;font-weight:700;color:white;letter-spacing:2px;font-family:'DM Sans',sans-serif;">IMPLORA</span><span style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-left:6px;font-family:'DM Mono',monospace;">Beauty of Perfection</span></div><div class="page-header-spacer"></div></div>
+  <div class="page-header"><button class="page-header-back" onclick="handleHeaderBack()">&#8592;</button><div class="page-header-logo"><img class="implora-header-logo" src="1730263247_Logo IMPLORA 2023 (1).png" alt="IMPLORA"></div><div class="page-header-spacer"></div></div>
   <div class="page-scroll">
     <div class="log-card" style="margin-bottom:14px">
       <div class="log-card-header">
@@ -4166,6 +4169,7 @@ var STORE_DB=[
   {code:'1006',name:'AEON Alam Sutera'},{code:'MSP',name:'Serpong Paradise'},{code:'IBS',name:'ITC BSD'},
   {code:'TKO',name:'Teras Kota'},{code:'GMM',name:'Grand Metropolitan Mall'},{code:'PMB',name:'Pakuwon Mall Bekasi'},
   {code:'MMB',name:'Metropolitan Mall Bekasi'},{code:'MKG',name:'Mall Kelapa Gading'},{code:'SNM',name:'Sunter Mall'},
+  {code:'CMM',name:'Metropolitan Mall Cileungsi'},{code:'PNK',name:'Panakukang'},
   {code:'MOI',name:'Mall Of Indonesia'},{code:'MAG',name:'Mall Artha Gading'},{code:'LHI',name:'Living Plaza Harapan Indah'},
   {code:'1002',name:'AEON Jakarta Garden City'},{code:'KJI',name:'Kramat Jati Indah'},{code:'MKK',name:'Mall Kota Kasablanka'},
   {code:'MCJ',name:'Mall Cijantung'},{code:'1004',name:'AEON Tanjung Barat'},{code:'PFT',name:'Plaza Festival'},
